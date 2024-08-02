@@ -1,0 +1,11 @@
+p
+{
+    padding: 10px;
+    color: white;
+}
+
+/* Make the input placeholder white when having dark background */
+.dark-placeholder::placeholder 
+{
+    color: white !important;
+}
