@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="initial-scale=1, width=device-width">
-        <title>Charming Flashcards</title>
+        <title>Charming Flashcards: {% block titel %} {% endblock %}</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
 
         <!-- Add in Bootstrap framework for the web application design -->
@@ -16,8 +16,8 @@
               <a class="navbar-brand">Charming Flashcards</a>
 
               <span class="navbar-text">
-                <a class="navbar-brand" href="#">Register</a>
-                <a class="navbar-brand" href="#">Sign in</a>
+                <a class="navbar-brand" href="/">Register</a>
+                <a class="navbar-brand" href="/login">Sign in</a>
               </span>
             </div>
           </nav>
