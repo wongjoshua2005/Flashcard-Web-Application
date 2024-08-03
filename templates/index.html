@@ -1,16 +1,45 @@
 {% extends "layout.html" %}
 
 {% block body %}
-    <p class="text-center fs-1 fw-bold">
-        Welcome to Charming Flashcards!
-    </p>
+<!-- Puts all the content into the center of the page -->
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh">
 
-    <form action="/register" method="post">
-        <div class="row justify-content-center input-group">
-            <div class="col-md-4">
-                <input type="text" class="form-control bg-dark text-light dark-placeholder mb-3" placeholder="Username">
-                <input type="text" class="form-control bg-dark text-light dark-placeholder mb-3" placeholder="Password">
+    <div class="text-center">
+        <p class="text-center fs-1 fw-bold">
+            Welcome to Charming Flashcards!
+        </p>
+
+        <!-- Centers the input fields below the text -->
+        <form class="row justify-content-center g-3 needs-validation">
+
+            <!-- Username section -->
+            <div class="col-md-4" data-bs-theme="dark">
+                <label for="username" class="form-label">Username</label>
+
+                <div class="input-group has-validation">
+                    <input type="text" class="form-control" id="validationCustomUsername"
+                        aria-describedby="inputGroupPrepend" required>
+                </div>
             </div>
-        </div>
-    </form>
+
+            <!-- Password section -->
+            <div class="col-md-4" data-bs-theme="dark">
+                <label for="password" class="form-label">Password</label>
+
+                <div class="input-group has-validation">
+                    <input type="text" class="form-control" id="validationCustomUsername"
+                        aria-describedby="inputGroupPrepend" required>
+                </div>
+            </div>
+
+            <!-- Submits information -->
+            <div class="col-12">
+                <button class="btn btn-primary" type="submit">Submit form</button>
+            </div>
+
+        </form>
+
+    </div>
+    
+</div>
 {% endblock %}

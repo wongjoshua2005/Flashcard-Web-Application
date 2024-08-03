@@ -4,6 +4,16 @@ p
     color: white;
 }
 
+label
+{
+    color: white;
+}
+
+.custom-width
+{
+    width: 50px;
+}
+
 /* Make the input placeholder white when having dark background */
 .dark-placeholder::placeholder 
 {
