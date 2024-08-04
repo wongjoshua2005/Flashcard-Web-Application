@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, session, g, url_for
+from flask import (
+    Flask, render_template, request, redirect, session, g, url_for
+)
 from flask_session import Session
 import sqlite3
+import bcrypt
 
 app = Flask(__name__)
 
@@ -18,6 +21,9 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
+def make_dicts(cursor, row):
+    return dict((cursor.description[idx][0], value)
+                for idx, value in enumerate(row))
 
 # Session information
 app.config["SESSION_PERMANENT"] = False
@@ -33,18 +39,43 @@ def register():
 
         if not user_name or not password or not confirm_pass:
             error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
-            return redirect(url_for("error", message=error_msg))
+            return redirect(url_for("error", message=error_msg, code=404))
 
         if password != confirm_pass:
             error_msg = "404...Invalid Password Verification!!! :C"
-            return redirect(url_for("error", message=error_msg))
+            return redirect(url_for("error", message=error_msg, code=404))
         
-        main_db = get_db().cursor()
-        user_list = main_db.execute(
+        main_db = get_db()
+        main_db.row_factory = make_dicts
+
+        main_cursor = main_db.cursor()
+
+        data = main_cursor.execute(
             "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
         )
-        
-        print(user_list)
+
+        user_list = data.fetchone()
+
+        if user_list:
+            error_msg = "409 Conflict! Username is already taken!!! >:C"
+            return redirect(url_for("error", message=error_msg, code=409))
+
+        pass_bytes = password.encode("utf-8")
+
+        salt_key = bcrypt.gensalt()
+
+        hash_key = bcrypt.hashpw(pass_bytes, salt_key)
+
+        main_cursor.execute(
+            "INSERT INTO user_info (user_name, hash) VALUES (?, ?)", 
+            (user_name, hash_key)
+            )
+
+        main_db.commit()
+        main_db.close()
+
+        session["user"] = user_name
+
         return redirect("/sets")
 
     return render_template("register.html")
@@ -63,12 +94,14 @@ def login():
 @app.route("/error")
 def error():
     error_reason = request.args.get("message")
-    return render_template("error.html", code=error_reason)
+    code = request.args.get("code")
+    return render_template("error.html", code=error_reason), code
     
 
 @app.route("/sets")
 def user_sets():
-    return render_template("index.html")
+    user_logged = 'user' in session
+    return render_template("index.html", logged=user_logged)
 
 # Debuggging purposes
 if __name__ == "__main__":
