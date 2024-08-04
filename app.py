@@ -39,14 +39,12 @@ def register():
             error_msg = "404...Invalid Password Verification!!! :C"
             return redirect(url_for("error", message=error_msg))
         
+        main_db = get_db().cursor()
+        user_list = main_db.execute(
+            "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
+        )
         
-        
-
-
-        print(user_name)
-        print(password)
-        print(confirm_pass)
-
+        print(user_list)
         return redirect("/sets")
 
     return render_template("register.html")
