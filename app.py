@@ -83,11 +83,47 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
+    if request.method == "POST":
+        user = request.form.get("username")
+        password = request.form.get("password")
+
+        if not user or not password:
+            error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
+            return redirect(url_for("error", message=error_msg, code=404))
+        
+        main_db = get_db()
+        main_db.row_factory = make_dicts
+
+        cursor = main_db.cursor()
+
+        user_data = cursor.execute(
+            "SELECT * FROM user_info WHERE user_name = ?", (user,)
+        )
+
+        users_list = user_data.fetchone()
+
+        if not users_list:
+            error_msg = "404...Username doesn't exist in the database :CCCC"
+            return redirect(url_for("error", message=error_msg, code=404))
+
+        encode_pass = password.encode("utf-8")
+
+        verify_pass = users_list["hash"]
+
+        print(verify_pass)
+
+        result = bcrypt.checkpw(encode_pass, verify_pass)
+
+        if not result:
+            error_msg = "401...Invalid password!!!"
+            return redirect(url_for("error", message=error_msg, code=401))
+
+        session["user"] = user
+
+        return redirect("/sets")
+
     # Closes out any user information logged in
     session.clear()
-
-    if request.method == "POST":
-        return redirect("/sets")
 
     return render_template("login.html")
 
