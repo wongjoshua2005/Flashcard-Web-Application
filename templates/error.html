@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<!-- Puts all the content into the center of the page -->
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh">
+
+    <div class="text-center">
+        <p class="text-center fs-1 fw-bold">
+            Error! &#128546;
+        </p>
+
+        <p>
+            Let's take a look at your problem...
+        </p>
+        <br />
+        <p>
+            Error Code: {{ code }}
+        </p>
+    </div>
+</div>
+{% endblock %}
