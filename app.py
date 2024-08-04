@@ -78,6 +78,9 @@ def register():
 
         return redirect("/sets")
 
+    if 'user' in session:
+        return redirect("/sets")
+
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -119,6 +122,9 @@ def login():
             return redirect(url_for("error", message=error_msg, code=401))
 
         session["user"] = user
+
+        main_db.commit()
+        main_db.close()
 
         return redirect("/sets")
 
