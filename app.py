@@ -32,6 +32,9 @@ Session(app)
 
 @app.route("/", methods=["GET", "POST"])
 def register():
+    if 'user' in session:
+        return redirect("/sets")
+
     if request.method == "POST":
         user_name = request.form.get("username")
         password = request.form.get("password")
@@ -76,9 +79,6 @@ def register():
 
         session["user"] = user_name
 
-        return redirect("/sets")
-
-    if 'user' in session:
         return redirect("/sets")
 
     return render_template("register.html")
@@ -143,7 +143,10 @@ def error():
 @app.route("/sets")
 def user_sets():
     user_logged = 'user' in session
-    return render_template("index.html", logged=user_logged)
+
+
+
+    return render_template("index.html", logged=user_logged, name=session["user"])
 
 # Debuggging purposes
 if __name__ == "__main__":

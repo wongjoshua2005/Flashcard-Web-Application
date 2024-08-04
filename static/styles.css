@@ -1,3 +1,8 @@
+*
+{
+    color: white;
+}
+
 p
 {
     padding: 10px;
@@ -7,6 +12,11 @@ p
 label
 {
     color: white;
+}
+
+.d-flex 
+{
+    margin-top: 50px;
 }
 
 .custom-width
