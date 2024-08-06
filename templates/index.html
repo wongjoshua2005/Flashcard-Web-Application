@@ -41,7 +41,11 @@
           <h3 style="padding: 20px;" class="card-title">
             {{ card.card_title }}
           </h3>
-          <a href="#" class="btn btn-primary">Start studying!</a>
+          <form action="/flashcard" method="post">
+            <button type="submit" class="btn btn-primary">
+              Start studying!
+            </button>
+          </form>
         </div>
       </div>
     {% endfor %}
