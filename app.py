@@ -140,13 +140,56 @@ def error():
     return render_template("error.html", code=error_reason), code
     
 
-@app.route("/sets")
+@app.route("/sets", methods=["GET", "POST"])
 def user_sets():
     user_logged = 'user' in session
+    main_db = get_db()
+    main_db.row_factory = make_dicts
+    main_cursor = main_db.cursor()
 
+    retrieve_id = main_cursor.execute(
+        "SELECT user_id FROM user_info WHERE user_name = ?", 
+            (session["user"],)
+    )
 
+    id = retrieve_id.fetchone()
 
-    return render_template("index.html", logged=user_logged, name=session["user"])
+    info = main_cursor.execute(
+        "SELECT card_title FROM card_list WHERE user_id = ?", (id["user_id"],)
+    )
+
+    all_titles = info.fetchall()
+
+    
+    if request.method == "POST":
+        card_title = request.form.get("card_name")
+
+        if not card_title:
+            error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
+            return redirect(url_for("error", message=error_msg, code=404))
+
+        data = main_cursor.execute(
+            "SELECT * FROM card_list WHERE card_title = ?", (card_title,)
+        )
+
+        card_names = data.fetchone()
+
+        if card_names:
+            error_msg = "409 Card already exists in your set. Go back!"
+            return redirect(url_for("error", message=error_msg, code=409))
+
+        main_cursor.execute(
+            "INSERT INTO card_list (user_id, card_title) VALUES (?, ?)", 
+            (id["user_id"], card_title)
+        )
+
+        main_db.commit()
+        main_db.close()
+
+        return redirect("/sets")
+
+    return render_template("index.html", logged=user_logged,
+                            name=session["user"], flashcards=all_titles)
 
 # Debuggging purposes
 if __name__ == "__main__":
