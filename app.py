@@ -198,11 +198,31 @@ def enter_flashcard():
     if request.method == "POST":
         title = request.form.get("card_title")
 
-        
+        main_db = get_db()
+        main_db.row_factory = make_dicts
+        main_cursor = main_db.cursor()        
 
+        set_data = main_cursor.execute(
+            "SELECT id FROM card_list WHERE card_title = ?", (title,)
+        )
+
+        set_id = set_data.fetchone()
+        print(set_id)
+
+        main_cursor.execute(
+            """INSERT INTO flashcard (card_id, term, definition) 
+            VALUES (?, 'Hello', ':)')""", (set_id["id"],)
+        )
+
+        flashcards = main_cursor.execute(
+            "SELECT term, definition FROM flashcard WHERE card_id = ?",
+              (set_id["id"],)
+        )
+
+        cards_list = flashcards.fetchall()
 
         return render_template("flashcard.html", logged=user_logged,
-                                name=title, )
+                                name=title, cards=cards_list)
 
     return redirect(url_for("error", message=error_msg, code=403))
 

@@ -22,10 +22,10 @@
           <form action="/flashcard" method="post">
             <div class="mb-3">
               <label for="recipient-name" class="col-form-label">Term:</label>
-              <input type="text" name="card_name" class="form-control user_input" id="flashcard-name" required>
+              <input type="text" name="term" class="form-control user_input" id="flashcard-name" required>
 
               <label for="recipient-name" class="col-form-label">Definition:</label>
-              <input type="text" name="card_name" class="form-control user_input" id="flashcard-name" required>
+              <input type="text" name="definition" class="form-control user_input" id="flashcard-name" required>
             </div>
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary">Make Card</button>
@@ -39,19 +39,12 @@
 <!-- Display set -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
-    <div class="carousel-indicators">
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
-            aria-current="true" aria-label="Slide 1"></button>
-        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-            aria-label="Slide 2"></button>
-    </div>
     <div class="carousel-inner border" style="padding: 20%; background-color: #282829;">
+    {% for term_list in cards %}
         <div class="carousel-item active text-center">
-            <h3>lorem ipsum (imagine longer text)</h3>
+            <h3 class="term">{{ term_list.term }}</h3>
         </div>
-        <div class="carousel-item text-center">
-            <h3>lorem ipsum (imagine longer text)</h3>
-        </div>
+    {% endfor %}
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
         data-bs-slide="prev">
@@ -77,12 +70,15 @@ slide" style="margin: 5%;">
     </div>
 
     <div class="row align-items-start">
-        <div class="col" style="font-size: 18px;">
-            Pee
-        </div>
-        <div class="col" style="font-size: 18px;">
-            Poo
-        </div>
+        {% for list in cards %}
+            <div class="col" style="font-size: 18px;">
+                {{ list.term }}
+            </div>
+
+            <div class="col" style="font-size: 18px;">
+                {{ list.definition }}
+            </div>
+        {% endfor %}
     </div>
 </div>
 
@@ -98,12 +94,12 @@ slide" style="margin: 5%;">
         <h4 style="text-align: center; font-size: 30px;">0</h4>
     </div>
 
-    <form action="/flashcard" method="post">
+    <!-- <form action="/flashcard" method="post">
         <div class="d-flex justify-content-center" style="padding: 1%;">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Start the pomo timer!
             </button>
          </div>
-    </form>
+    </form> -->
 </div>
 {% endblock %}
