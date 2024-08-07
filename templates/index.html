@@ -38,11 +38,16 @@
     {% for card in flashcards %}
       <div class="card text-center mb-3" style="width: 18rem;">
         <div class="card-body">
-          <h3 style="padding: 20px;" class="card-title">
-            {{ card.card_title }}
-          </h3>
           <form action="/flashcard" method="post">
-            <button type="submit" class="btn btn-primary">
+            <h3 style="padding: 20px;" name="card" 
+            class="card-title">
+              {{ card.card_title }}
+            </h3>
+
+            <input type="hidden" name="card_title" value="{{ card.card_title }}">
+
+            <button type="submit" value="use_card" 
+            class="btn btn-primary">
               Start studying!
             </button>
           </form>

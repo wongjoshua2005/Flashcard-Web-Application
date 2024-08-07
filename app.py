@@ -159,7 +159,7 @@ def user_sets():
     )
 
     all_titles = info.fetchall()
-    
+
     if request.method == "POST":
         card_title = request.form.get("card_name")
 
@@ -190,9 +190,18 @@ def user_sets():
     return render_template("index.html", logged=user_logged,
                             name=session["user"], flashcards=all_titles)
 
-@app.route("/flashcard")
-def study_flashcard():
-    return render_template("flashcard.html")
+@app.route("/flashcard", methods=["GET", "POST"])
+def enter_flashcard():
+    user_logged = 'user' in session
+
+    if request.method == "POST":
+        title = request.form.get("card_title")
+
+
+        return render_template("flashcard.html", logged=user_logged,
+                                name=title)
+
+    return render_template("flashcard.html", logged=user_logged)
 
 # Debuggging purposes
 if __name__ == "__main__":
