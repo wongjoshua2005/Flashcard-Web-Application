@@ -24,6 +24,10 @@ label
     width: 50px;
 }
 
+.carousel-item.active {
+    display:block;
+}
+
 /* Make the input placeholder white when having dark background */
 .dark-placeholder::placeholder 
 {

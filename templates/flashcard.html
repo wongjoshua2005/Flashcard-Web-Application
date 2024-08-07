@@ -2,4 +2,54 @@
 
 {% block body %}
 <h1 class="text-center">Flashcard: {{ name }}</h1>
+
+<!-- Display flashcards -->
+<div id="carouselExampleIndicators" class="carousel 
+slide" style="margin: 5%;">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+            aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+            aria-label="Slide 2"></button>
+    </div>
+    <div class="carousel-inner" style="padding: 20%; border: 1px solid; background-color: #141619;">
+        <div class="carousel-item active text-center">
+            <h3>lorem ipsum (imagine longer text)</h3>
+        </div>
+        <div class="carousel-item text-center">
+            <h3>lorem ipsum (imagine longer text)</h3>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+        data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+        data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- List out all the cards inside this set -->
+<div class="container text-center" style="background-color: #141619;">
+    <div class="row align-items-start">
+        <div class="col" style="border: 1px solid; font-size: 25px; font-weight: bolder;">
+            Term
+        </div>
+        <div class="col" style="border: 1px solid; font-size: 25px; font-weight: bolder;">
+            Definition
+        </div>
+    </div>
+
+    <div class="row align-items-start">
+        <div class="col" style="font-size: 18px;">
+            Pee
+        </div>
+        <div class="col" style="font-size: 18px;">
+            Poo
+        </div>
+    </div>
+</div>
 {% endblock %}
