@@ -1,9 +1,42 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<h1 class="text-center">Flashcard: {{ name }}</h1>
+<h1 class="text-center">Set: {{ name }}</h1>
 
-<!-- Display flashcards -->
+<!-- Modal button to create flashcard -->
+<div class="d-flex justify-content-center">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Create flashcard
+    </button>
+ </div>
+
+ <!-- Modal to create the flashcard  -->
+ <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Create a new flashcard</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/flashcard" method="post">
+            <div class="mb-3">
+              <label for="recipient-name" class="col-form-label">Term:</label>
+              <input type="text" name="card_name" class="form-control user_input" id="flashcard-name" required>
+
+              <label for="recipient-name" class="col-form-label">Definition:</label>
+              <input type="text" name="card_name" class="form-control user_input" id="flashcard-name" required>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Make Card</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Display set -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
     <div class="carousel-indicators">

@@ -193,15 +193,18 @@ def user_sets():
 @app.route("/flashcard", methods=["GET", "POST"])
 def enter_flashcard():
     user_logged = 'user' in session
+    error_msg = "Not supposed to be here...Go back!!! >:CCCCCCCCC"
 
     if request.method == "POST":
         title = request.form.get("card_title")
 
+        
+
 
         return render_template("flashcard.html", logged=user_logged,
-                                name=title)
+                                name=title, )
 
-    return render_template("flashcard.html", logged=user_logged)
+    return redirect(url_for("error", message=error_msg, code=403))
 
 # Debuggging purposes
 if __name__ == "__main__":
