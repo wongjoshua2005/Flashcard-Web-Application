@@ -12,7 +12,7 @@ slide" style="margin: 5%;">
         <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
             aria-label="Slide 2"></button>
     </div>
-    <div class="carousel-inner" style="padding: 20%; border: 1px solid; background-color: #141619;">
+    <div class="carousel-inner border" style="padding: 20%; background-color: #282829;">
         <div class="carousel-item active text-center">
             <h3>lorem ipsum (imagine longer text)</h3>
         </div>
@@ -33,12 +33,12 @@ slide" style="margin: 5%;">
 </div>
 
 <!-- List out all the cards inside this set -->
-<div class="container text-center" style="background-color: #141619;">
+<div class="container text-center" style="background-color: #282829;">
     <div class="row align-items-start">
-        <div class="col" style="border: 1px solid; font-size: 25px; font-weight: bolder;">
+        <div class="col border" style="font-size: 25px; font-weight: bolder;">
             Term
         </div>
-        <div class="col" style="border: 1px solid; font-size: 25px; font-weight: bolder;">
+        <div class="col border" style="font-size: 25px; font-weight: bolder;">
             Definition
         </div>
     </div>
@@ -51,5 +51,26 @@ slide" style="margin: 5%;">
             Poo
         </div>
     </div>
+</div>
+
+<!-- Pomodoro Timer -->
+<div class="d-flex flex-column justify-content-center border" style="background-color: #282829;">
+    <h3 class="border" style="text-align: center;">Pomodoro Timer</h3>
+
+    <div>
+        <h1 style="text-align: center; padding:5%; font-size: 150px; font-weight: bolder;">00:00</h1>
+    </div>
+
+    <div>
+        <h4 style="text-align: center; font-size: 30px;">0</h4>
+    </div>
+
+    <form action="/flashcard" method="post">
+        <div class="d-flex justify-content-center" style="padding: 1%;">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Start the pomo timer!
+            </button>
+         </div>
+    </form>
 </div>
 {% endblock %}
