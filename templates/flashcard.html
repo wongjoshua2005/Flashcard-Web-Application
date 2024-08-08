@@ -39,10 +39,11 @@
 <!-- Display set -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
-    <div class="carousel-inner border term" style="padding: 20%; background-color: #282829;">
+    <div class="carousel-inner border" style="background-color: #282829;">
     {% for term_list in cards %}
-        <div class="carousel-item {% if loop.first %}active{% endif %} text-center">
-            <h3 style="font-size: 85px;">{{ term_list.term }}</h3>
+        <div style="border: 1px solid;" class="carousel-item {% if loop.first %}active{% endif %} text-center">
+            <p class="swap_card d-flex justify-content-center align-items-center"
+             style="height: 500px; font-size: 150px;">{{ term_list.term }}</p>
             <p class="def" hidden>{{ term_list.definition }}</p>
         </div>
     {% endfor %}

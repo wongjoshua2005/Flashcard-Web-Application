@@ -24,8 +24,9 @@ label
     width: 50px;
 }
 
-.carousel-item.active {
-    display:block;
+.carousel-item:hover
+{
+    cursor: pointer;
 }
 
 /* Make the input placeholder white when having dark background */

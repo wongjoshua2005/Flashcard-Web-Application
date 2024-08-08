@@ -266,41 +266,6 @@ def enter_flashcard():
     return render_template("flashcard.html", logged=user_logged,
                             name=user_set, cards=cards_list)
 
-# @app.route("/update_flashcard", methods=["POST"])
-# def update_flashcard():
-#     if request.method == "POST":
-#         main_db = get_db()
-#         main_db.row_factory = make_dicts
-#         main_cursor = main_db.cursor() 
-
-#         new_term = request.form.get("term")
-#         new_definition = request.form.get("definition")
-
-#         if not new_term or not new_definition:
-#             error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
-#             return redirect(url_for("error", message=error_msg, code=404))
-        
-#         verify_term = main_cursor.execute(
-#         "SELECT * FROM flashcard WHERE term = ?",
-#         (new_term,)
-#         )
-
-#         result = verify_term.fetchone()
-
-#         if result:
-#             error_msg = """409 Conflict! Flashcard already exists! Use update
-#             button!!!"""
-#             return redirect(url_for("error", message=error_msg, code=409))
-        
-#         print(session["set_id"])
-
-#         main_cursor.execute(
-#         """INSERT INTO flashcard (card_id, term, definition) 
-#         VALUES (?, ?, ?)""", (session["set_id"]["id"], new_term, new_definition)
-#         )
-        
-#     return redirect("/flashcard")
-
 # Debuggging purposes
 if __name__ == "__main__":
     app.run(debug=True)
