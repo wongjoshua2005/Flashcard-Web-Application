@@ -39,10 +39,11 @@
 <!-- Display set -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
-    <div class="carousel-inner border" style="padding: 20%; background-color: #282829;">
+    <div class="carousel-inner border term" style="padding: 20%; background-color: #282829;">
     {% for term_list in cards %}
-        <div class="carousel-item active text-center">
-            <h3 class="term">{{ term_list.term }}</h3>
+        <div class="carousel-item {% if loop.first %}active{% endif %} text-center">
+            <h3 style="font-size: 85px;">{{ term_list.term }}</h3>
+            <p class="def" hidden>{{ term_list.definition }}</p>
         </div>
     {% endfor %}
     </div>
@@ -69,17 +70,17 @@ slide" style="margin: 5%;">
         </div>
     </div>
 
-    <div class="row align-items-start">
-        {% for list in cards %}
-            <div class="col" style="font-size: 18px;">
-                {{ list.term }}
-            </div>
+    {% for list in cards %}
+        <div class="row align-items-start">
+                <div class="col" style="font-size: 18px;">
+                    {{ list.term }}
+                </div>
 
-            <div class="col" style="font-size: 18px;">
-                {{ list.definition }}
-            </div>
-        {% endfor %}
-    </div>
+                <div class="col" style="font-size: 18px;">
+                    {{ list.definition }}
+                </div>
+        </div>
+    {% endfor %}
 </div>
 
 <!-- Pomodoro Timer -->

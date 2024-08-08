@@ -161,31 +161,38 @@ def user_sets():
     all_titles = info.fetchall()
 
     if request.method == "POST":
-        card_title = request.form.get("card_name")
+        if 'card_name' in request.form:
+            card_title = request.form.get("card_name")
 
-        if not card_title:
-            error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
-            return redirect(url_for("error", message=error_msg, code=404))
+            if not card_title:
+                error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
+                return redirect(url_for("error", message=error_msg, code=404))
 
-        data = main_cursor.execute(
-            "SELECT * FROM card_list WHERE card_title = ?", (card_title,)
-        )
+            data = main_cursor.execute(
+                "SELECT * FROM card_list WHERE card_title = ?", (card_title,)
+            )
 
-        card_names = data.fetchone()
+            card_names = data.fetchone()
 
-        if card_names:
-            error_msg = "409 Card already exists in your set. Go back!"
-            return redirect(url_for("error", message=error_msg, code=409))
+            if card_names:
+                error_msg = "409 Card already exists in your set. Go back!"
+                return redirect(url_for("error", message=error_msg, code=409))
 
-        main_cursor.execute(
-            "INSERT INTO card_list (user_id, card_title) VALUES (?, ?)", 
-            (id["user_id"], card_title)
-        )
+            main_cursor.execute(
+                "INSERT INTO card_list (user_id, card_title) VALUES (?, ?)", 
+                (id["user_id"], card_title)
+            )
 
-        main_db.commit()
-        main_db.close()
+            main_db.commit()
+            main_db.close()
 
-        return redirect("/sets")
+            return redirect("/sets")
+
+        if 'card_title' in request.form:
+            chosen_card = request.form.get("card_title")
+            session["set"] = chosen_card
+            session["id"] = id["user_id"]
+            return redirect("/flashcard")
 
     return render_template("index.html", logged=user_logged,
                             name=session["user"], flashcards=all_titles)
@@ -193,38 +200,106 @@ def user_sets():
 @app.route("/flashcard", methods=["GET", "POST"])
 def enter_flashcard():
     user_logged = 'user' in session
-    error_msg = "Not supposed to be here...Go back!!! >:CCCCCCCCC"
+    user_set = session["set"]
+
+    main_db = get_db()
+    main_db.row_factory = make_dicts
+    main_cursor = main_db.cursor()        
+
+    set_data = main_cursor.execute(
+        "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
+    )
+
+    set_id = set_data.fetchone()
+
+    flashcards = main_cursor.execute(
+        "SELECT term, definition FROM flashcard WHERE card_set = ?",
+          (set_id["id"],)
+    )
+
+    cards_list = flashcards.fetchall()
 
     if request.method == "POST":
-        title = request.form.get("card_title")
+        new_term = request.form.get("term")
+        new_definition = request.form.get("definition")
 
-        main_db = get_db()
-        main_db.row_factory = make_dicts
-        main_cursor = main_db.cursor()        
+        print(new_term)
+        print(new_definition)
+        print(session["id"])
+        print(session["user"])
 
+        if not new_term or not new_definition:
+            error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
+            return redirect(url_for("error", message=error_msg, code=404))
+        
+        verify_term = main_cursor.execute(
+        "SELECT * FROM flashcard WHERE term = ? AND user_id = ?",
+        (new_term, session["id"])
+        )
+
+        result = verify_term.fetchone()
+
+        print(result)
+
+        if result:
+            error_msg = """409 Conflict! Flashcard already exists! Use update
+            button!!!"""
+            return redirect(url_for("error", message=error_msg, code=409))
+        
         set_data = main_cursor.execute(
-            "SELECT id FROM card_list WHERE card_title = ?", (title,)
+            "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
         )
 
         set_id = set_data.fetchone()
-        print(set_id)
 
         main_cursor.execute(
-            """INSERT INTO flashcard (card_id, term, definition) 
-            VALUES (?, 'Hello', ':)')""", (set_id["id"],)
+        """INSERT INTO flashcard (user_id, card_set, term, definition) 
+        VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
+                                  new_term, new_definition)
         )
 
-        flashcards = main_cursor.execute(
-            "SELECT term, definition FROM flashcard WHERE card_id = ?",
-              (set_id["id"],)
-        )
+        main_db.commit()
+        main_db.close()
 
-        cards_list = flashcards.fetchall()
+        return redirect("/flashcard")       
 
-        return render_template("flashcard.html", logged=user_logged,
-                                name=title, cards=cards_list)
+    return render_template("flashcard.html", logged=user_logged,
+                            name=user_set, cards=cards_list)
 
-    return redirect(url_for("error", message=error_msg, code=403))
+# @app.route("/update_flashcard", methods=["POST"])
+# def update_flashcard():
+#     if request.method == "POST":
+#         main_db = get_db()
+#         main_db.row_factory = make_dicts
+#         main_cursor = main_db.cursor() 
+
+#         new_term = request.form.get("term")
+#         new_definition = request.form.get("definition")
+
+#         if not new_term or not new_definition:
+#             error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
+#             return redirect(url_for("error", message=error_msg, code=404))
+        
+#         verify_term = main_cursor.execute(
+#         "SELECT * FROM flashcard WHERE term = ?",
+#         (new_term,)
+#         )
+
+#         result = verify_term.fetchone()
+
+#         if result:
+#             error_msg = """409 Conflict! Flashcard already exists! Use update
+#             button!!!"""
+#             return redirect(url_for("error", message=error_msg, code=409))
+        
+#         print(session["set_id"])
+
+#         main_cursor.execute(
+#         """INSERT INTO flashcard (card_id, term, definition) 
+#         VALUES (?, ?, ?)""", (session["set_id"]["id"], new_term, new_definition)
+#         )
+        
+#     return redirect("/flashcard")
 
 # Debuggging purposes
 if __name__ == "__main__":
