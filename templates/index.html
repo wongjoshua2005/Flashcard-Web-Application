@@ -3,56 +3,100 @@
 {% block body %}
 <h1 class="text-center">Welcome, {{ name }}! &#128522;</h1>
 
-<!-- Button trigger modal -->
+<!-- To run the modal model for creating a new set -->
  <div class="d-flex justify-content-center">
+
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
         Create Set
     </button>
+
  </div>
 
- <!-- Modal to create the Set  -->
- <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+ <!-- To display the necessary steps to creating a set -->
+ <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" 
+ aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+    <!-- Necessary Bootstrap containers to create the visuals -->
     <div class="modal-dialog">
       <div class="modal-content">
+        
+        <!-- To display the top title what the user is doing -->
         <div class="modal-header">
+
           <h1 class="modal-title fs-5" id="exampleModalLabel">Create a new set! :D</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
         </div>
+
+        <!-- Prompt the user to enter inputs for creating new set -->
         <div class="modal-body">
+
+          <!-- Runs a specific condition with Flask method based on the name -->
           <form action="/sets" method="post" name="form1">
+
+            <!-- Ask user what to name their set that is not blank -->
             <div class="mb-3">
               <label for="recipient-name" class="col-form-label">Name:</label>
-              <input type="text" name="card_name" class="form-control user_input" id="flashcard-name" required>
+              <input type="text" name="card_name" 
+              class="form-control user_input" id="flashcard-name" required>
             </div>
+
+            <!-- Runs Flask method that creates a new set in the database -->
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary">Make Set</button>
             </div>
+
           </form>
+
         </div>
+
       </div>
     </div>
+
   </div>
 
-  <!-- Set Template -->
-  <div data-bs-theme="dark" style="padding: 50x;" class="card-container d-flex align-content-start justify-content-center flex-wrap">
+  <!-- 
+  To run the default set design after user created a set or display 
+  the actual set 
+   -->
+  <div data-bs-theme="dark" style="padding: 50x;" 
+  class="card-container d-flex align-content-start 
+  justify-content-center flex-wrap">
+
+    <!-- To go through all sets in the database from user -->
     {% for card in flashcards %}
+
+      <!-- Bootstrap's card design -->
       <div class="card text-center mb-3" style="width: 18rem;">
         <div class="card-body">
+
+          <!-- Runs Flask method to enter into a specific set -->
           <form action="/sets" method="post" name="form2">
+
+            <!-- Display card title -->
             <h3 style="padding: 20px;" name="card" 
             class="card-title">
               {{ card.card_title }}
             </h3>
 
-            <input type="hidden" name="card_title" value="{{ card.card_title }}">
+            <!--
+             A workaround to retrieve the set title to run Flask
+             method when entering the set 
+            -->
+            <input type="hidden" name="card_title" 
+            value="{{ card.card_title }}">
 
+            <!-- Sends information retrieved from this from to Flask method -->
             <button type="submit" value="use_card" 
             class="btn btn-primary">
               Start studying!
             </button>
+
           </form>
+
         </div>
       </div>
     {% endfor %}
+    
   </div>
 {% endblock %}
