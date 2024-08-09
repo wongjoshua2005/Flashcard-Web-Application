@@ -1,40 +1,43 @@
 {% extends "layout.html" %}
 
 {% block body %}
-<!-- Puts all the content into the center of the page -->
-<div class="d-flex justify-content-center align-items-center" style="height: 75vh">
+<!-- Centers all information to the middle of the HTML page -->
+<div class="d-flex justify-content-center align-items-center" 
+style="height: 75vh">
 
+    <!-- To greet the user when they try to login -->
     <div class="text-center">
         <p class="text-center fs-1 fw-bold">
             Welcome back! Ready to learn? :D
         </p>
 
-        
+        <!-- To center the fields in horizontal order -->
+        <form action="/login" method="post" 
+        class="row justify-content-center g-3 needs-validation">
 
-        <!-- Centers the input fields below the text -->
-        <form action="/login" method="post" class="row justify-content-center g-3 needs-validation">
-
-            <!-- Username section -->
+            <!-- To ask for username to sign in -->
             <div class="col-md-4" data-bs-theme="dark">
                 <label for="username" class="form-label">Username</label>
 
+                <!-- Warns user if they left the field blank -->
                 <div class="input-group has-validation">
                     <input type="text" name="username" class="form-control"
                         aria-describedby="inputGroupPrepend" required>
                 </div>
             </div>
 
-            <!-- Password section -->
+            <!-- Ask for a password to verify if associated with username -->
             <div class="col-md-4" data-bs-theme="dark">
                 <label for="password" class="form-label">Password</label>
 
+                <!-- Warns user if they did not enter a password -->
                 <div class="input-group has-validation">
                     <input type="password" name="password" class="form-control"
                         aria-describedby="inputGroupPrepend" required>
                 </div>
             </div>
 
-            <!-- Submits information -->
+            <!-- Submit information to Flask method for verification -->
             <div class="col-12">
                 <button class="btn btn-primary" type="submit">Time to study!</button>
             </div>

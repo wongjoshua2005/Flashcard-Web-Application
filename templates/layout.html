@@ -43,7 +43,9 @@
               <!-- Display the list of available navigation buttons -->
               <ul class="navbar-nav ms-auto">
 
-                <!-- To allow user for entering into their account -->
+                <!-- 
+                To allow user to enter or leave their account after session 
+                -->
                 {% if not logged %}
                   <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="/">Sign up</a>
@@ -53,7 +55,6 @@
                     <a class="nav-link" href="/login">Log in</a>
                   </li>
                 {% else %}
-                  <!-- To allow the user to sign out after session -->
                   <li class="nav-item">
                     <a class="nav-link" href="/login">Log out</a>
                   </li>
