@@ -219,22 +219,20 @@ def enter_flashcard():
 
     cards_list = flashcards.fetchall()
 
+    implement_dummy = not cards_list
+
     if request.method == "POST":
         new_term = request.form.get("term")
         new_definition = request.form.get("definition")
-
-        print(new_term)
-        print(new_definition)
-        print(session["id"])
-        print(session["user"])
 
         if not new_term or not new_definition:
             error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
             return redirect(url_for("error", message=error_msg, code=404))
         
         verify_term = main_cursor.execute(
-        "SELECT * FROM flashcard WHERE term = ? AND user_id = ?",
-        (new_term, session["id"])
+        """SELECT * FROM flashcard WHERE term = ? 
+        AND user_id = ? AND card_set = ?""",
+        (new_term, session["id"], int(set_id["id"]))
         )
 
         result = verify_term.fetchone()
@@ -264,7 +262,8 @@ def enter_flashcard():
         return redirect("/flashcard")       
 
     return render_template("flashcard.html", logged=user_logged,
-                            name=user_set, cards=cards_list)
+                            name=user_set, cards=cards_list,
+                              empty_list=implement_dummy)
 
 # Debuggging purposes
 if __name__ == "__main__":

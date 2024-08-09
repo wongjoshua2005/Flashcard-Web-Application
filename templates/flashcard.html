@@ -40,23 +40,27 @@
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
     <div class="carousel-inner border" style="background-color: #282829;">
+    {% if empty_list %}
+        <div style="border: 1px solid;" class="carousel-item active text-center">
+            <p class="swap_card d-flex justify-content-center align-items-center"
+            style="height: 500px; font-size: 50px;">
+                Use add flashcard to add more cards!!!
+            </p>
+        </div>
+    {% endif %}
     {% for term_list in cards %}
         <div style="border: 1px solid;" class="carousel-item {% if loop.first %}active{% endif %} text-center">
             <p class="swap_card d-flex justify-content-center align-items-center"
-             style="height: 500px; font-size: 150px;">{{ term_list.term }}</p>
+             style="width: auto; height: 500px; font-size: 3vw; overflow: hidden;">{{ term_list.term }}</p>
             <p class="def" hidden>{{ term_list.definition }}</p>
         </div>
     {% endfor %}
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
         data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
     </button>
     <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
         data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
     </button>
 </div>
 
