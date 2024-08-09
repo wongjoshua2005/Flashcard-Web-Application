@@ -1,21 +1,30 @@
+<!-- To only focus on the body display and re-use code -->
 {% extends "layout.html" %}
 
 {% block body %}
-<!-- Puts all the content into the center of the page -->
+<!-- Centers all information to the middle of the HTML page -->
 <div class="d-flex justify-content-center align-items-center" style="height: 100vh">
 
+    <!-- To warn that the user did something wrong -->
     <div class="text-center">
+
         <p class="text-center fs-1 fw-bold">
             Error! &#128546;
         </p>
 
+        <!-- Diagnose the reason that there was an error -->
         <p>
             Let's take a look at your problem...
         </p>
+
         <br />
+
+        <!-- Display the error code and the reason for the error -->
         <p>
             Error Code: {{ code }}
         </p>
+
     </div>
+    
 </div>
 {% endblock %}
