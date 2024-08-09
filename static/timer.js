@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () =>
             reset_timer = true;
             oscillatorNode = audioCtx.createOscillator();
             oscillatorNode.type = "sine";
-            oscillatorNode.frequency.value = 800;
+            oscillatorNode.frequency.value = 1000;
             oscillatorNode.connect(audioCtx.destination);
             oscillatorNode.start();
         } else {

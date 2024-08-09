@@ -4,58 +4,82 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="initial-scale=1, width=device-width">
         <title>Charming Flashcards</title>
+
+        <!-- Modify background and text properties of all web pages -->
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
 
         <!-- Add in Bootstrap framework for the web application design -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-        <!-- Creating flashcards functionality -->
-        <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+        <!-- To add functionality of switching between term and definition -->
+        <script src="{{ url_for('static', filename='script.js') }}" defer>
+        </script>
 
-        <!-- Pomodoro timer functionality -->
-        <script src="{{ url_for('static', filename='timer.js') }}" defer></script>
+        <!-- To add functionality for the pomodoro timer -->
+        <script src="{{ url_for('static', filename='timer.js') }}" defer>
+        </script>
     </head>
 
     <body style="background-color: #2C2E3A">
-        <!-- Navigation Bar -->
-        <nav data-bs-theme="dark" class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+        <!-- Controls the navigation bar on top for every page (not fixed) -->
+        <nav data-bs-theme="dark" class="navbar navbar-expand-lg 
+        bg-body-tertiary border-bottom">
+
+          <!-- Add the individual buttons for the navigation bar -->
           <div class="container-fluid">
 
             <a class="navbar-brand">Charming Flashcards</a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            
+            <!-- To show the toggle button when using small screen -->
+            <button class="navbar-toggler" type="button" 
+            data-bs-toggle="collapse" data-bs-target="#navbarNav">
               <span class="navbar-toggler-icon"></span>
             </button>
 
+            <!-- To show each individual option available in navigation bar -->
             <div class="collapse navbar-collapse" id="navbarNav">
+              
+              <!-- Display the list of available navigation buttons -->
               <ul class="navbar-nav ms-auto">
+
+                <!-- To allow user for entering into their account -->
                 {% if not logged %}
                   <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="/">Sign up</a>
                   </li>
+
                   <li class="nav-item">
                     <a class="nav-link" href="/login">Log in</a>
                   </li>
                 {% else %}
+                  <!-- To allow the user to sign out after session -->
                   <li class="nav-item">
                     <a class="nav-link" href="/login">Log out</a>
                   </li>
                 {% endif %}
               </ul>
+
             </div>
 
           </div>
+
         </nav>        
 
-
+        <!-- This area is where most of the main content is displayed -->
         <div class="mt-5">
             {%block body %}{% endblock %}
         </div>
         
 
-        <!-- Necessary scripts for Bootstrap -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+        <!-- To run necessary Bootstrap animations and the framework itself -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" 
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" 
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     </body>
 </html>
