@@ -1,48 +1,72 @@
+<!-- To only focus on the body display and re-use code -->
 {% extends "layout.html" %}
 
 {% block body %}
-<!-- Puts all the content into the center of the page -->
-<div class="d-flex justify-content-center align-items-center" style="height: 75vh">
+<!-- Centers all information to the middle of the HTML page -->
+<div class="d-flex justify-content-center align-items-center" 
+style="height: 75vh">
 
+    <!-- To welcome the user when they first enter the site -->
     <div class="text-center">
+
         <p class="text-center fs-1 fw-bold">
             Welcome to Charming Flashcards!
         </p>
 
-        <!-- Centers the input fields below the text -->
-        <form action="/" method="post" class="row justify-content-center g-3 needs-validation">
+        <!-- To center the fields in horizontal order -->
+        <form action="/" method="post" 
+        class="row justify-content-center g-3 needs-validation">
 
-            <!-- Username Section -->
+            <!-- To ask for username to sign up -->
             <div class="col-md-4" data-bs-theme="dark">
                 <label for="username" class="form-label">Username</label>
 
+                <!-- Warns user if they left the field blank -->
                 <div class="input-group has-validation">
-                    <input type="text" name="username" class="form-control"
-                        aria-describedby="inputGroupPrepend" required>
+
+                    <input type="text" name="username" 
+                    class="form-control" aria-describedby="inputGroupPrepend"
+                        required>
+
                 </div>
+
             </div>
 
-            <!-- Password Section -->
+            <!-- Ask for a password to verify if associated with username -->
             <div class="col-md-4" data-bs-theme="dark">
+
                 <label for="password" class="form-label">Password</label>
 
+                <!-- Warns user if they did not enter a password -->
                 <div class="input-group has-validation">
-                    <input type="password" name="password" class="form-control"
-                        aria-describedby="inputGroupPrepend" required>
+
+                    <input type="password" name="password" 
+                    class="form-control" aria-describedby="inputGroupPrepend"
+                        required>
+
                 </div>
+
             </div>
 
-            <!-- Validate Password Section -->
+            <!-- To confirm the password is what they want -->
             <div class="col-md-4" data-bs-theme="dark">
-                <label for="password" class="form-label">Confirm Password</label>
-            
+
+                <label for="password" class="form-label">
+                    Confirm Password
+                </label>
+
+                <!-- Warns the user if they did not type in anything -->
                 <div class="input-group has-validation">
-                    <input type="password" name="confirm_pass" class="form-control"
-                        aria-describedby="inputGroupPrepend" required>
-                    </div>
+
+                    <input type="password" name="confirm_pass" 
+                    class="form-control" aria-describedby="inputGroupPrepend"
+                        required>
+
                 </div>
 
-            <!-- Submits information -->
+            </div>
+
+            <!-- Submit information to Flask method for verification -->
             <div class="col-12">
                 <button class="btn btn-primary" type="submit">Sign up! :D</button>
             </div>
@@ -50,6 +74,6 @@
         </form>
 
     </div>
-    
+
 </div>
 {% endblock %}
