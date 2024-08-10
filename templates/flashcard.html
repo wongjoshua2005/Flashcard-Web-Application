@@ -4,80 +4,159 @@
 {% block body %}
 <h1 class="text-center">Set: {{ name }}</h1>
 
-<!-- Modal button to create flashcard -->
+<!-- To run the modal model for creating a new flashcard for the set -->
 <div class="d-flex justify-content-center">
+
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
         Create flashcard
     </button>
+
  </div>
 
- <!-- Modal to create the flashcard  -->
- <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- To display the necessary steps to creating a a valid flashcard -->
+ <div data-bs-theme="dark" class="modal fade" id="exampleModal" 
+ tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+    <!-- Necessary Bootstrap containers to create the visuals -->
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Create a new flashcard</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form action="/flashcard" method="post">
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Term:</label>
-              <input type="text" name="term" class="form-control user_input" id="flashcard-name" required>
 
-              <label for="recipient-name" class="col-form-label">Definition:</label>
-              <input type="text" name="definition" class="form-control user_input" id="flashcard-name" required>
+        <!-- To display the top title what the user is doing -->
+        <div class="modal-header">
+
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            Create a new flashcard
+          </h1>
+          <button type="button" class="btn-close" 
+          data-bs-dismiss="modal" aria-label="Close"></button>
+
+        </div>
+
+        <!-- Prompt the user to enter inputs for creating new flashcard -->
+        <div class="modal-body">
+
+        <!-- Runs a specific condition with Flask method based on the name -->
+          <form action="/flashcard" method="post">
+
+            <!-- Ask for term and definition to create the new flashcard -->
+            <div class="mb-3">
+              <label for="recipient-name" class="col-form-label">
+                Term:
+              </label>
+              <input type="text" name="term" 
+              class="form-control user_input" id="flashcard-name" required>
+
+              <label for="recipient-name" class="col-form-label">
+                Definition:
+              </label>
+              <input type="text" name="definition" 
+              class="form-control user_input" id="flashcard-name" required>
             </div>
+
+            <!-- 
+            Runs Flask method that creates a flashcard for 
+            the set in the database
+             -->
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary">Make Card</button>
             </div>
+
           </form>
+
         </div>
+
       </div>
     </div>
+
   </div>
 
-<!-- Display set -->
+<!-- To display each flashcard and allow interactivity to the card -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
+
+    <!-- 
+    The container controls the white border around the card
+     and establishes the background color for the card. 
+    -->
     <div class="carousel-inner border" style="background-color: #282829;">
+    
+    <!-- Dummy card incase the user did not create a flashcard yet -->
     {% if empty_list %}
-        <div style="border: 1px solid;" class="carousel-item active text-center">
-            <p class="swap_card d-flex justify-content-center align-items-center"
-            style="height: 500px; font-size: 50px;">
+        <div class="carousel-item active text-center">
+
+            <p class="swap_card d-flex justify-content-center 
+            align-items-center" style="height: 500px; font-size: 50px;">
                 Use add flashcard to add more cards!!!
             </p>
+
         </div>
     {% endif %}
+
+    <!-- 
+    Iterates through all the cards available from the set database 
+    to display them for the user to study
+    -->
     {% for term_list in cards %}
-        <div style="border: 1px solid;" class="carousel-item {% if loop.first %}active{% endif %} text-center">
+        <!-- 
+        Adds a loop.first condition to ensure only one card is 
+        active at a time and prevent all cards displayed at the same time
+        -->
+        <div style="border: 1px solid;" 
+        class="carousel-item {% if loop.first %}active{% endif %} text-center">
+
             <p class="swap_card d-flex justify-content-center align-items-center"
-             style="width: auto; height: 500px; font-size: 3vw; overflow: hidden;">{{ term_list.term }}</p>
-            <p class="def" hidden>{{ term_list.definition }}</p>
+             style="width: auto; height: 500px; font-size: 3vw; overflow: hidden;">
+                {{ term_list.term }}
+            </p>
+
+            <!-- 
+            Allows Javascript method to swap the 
+            term and definition through click listener
+              -->
+            <p class="def" hidden>
+                {{ term_list.definition }}
+            </p>
+
         </div>
     {% endfor %}
+
     </div>
+
+    <!-- Allows the user to go through each flashcard in the set -->
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
         data-bs-slide="prev">
     </button>
+
     <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
         data-bs-slide="next">
     </button>
+
 </div>
 
-<!-- List out all the cards inside this set -->
+<!-- Displays all the terms and definitions inside the set -->
 <div class="container text-center" style="background-color: #282829;">
+
+    <!-- 
+    Establishes the columns to indicate 
+    where the terms and definitions are located 
+     -->
     <div class="row align-items-start">
+
         <div class="col border" style="font-size: 25px; font-weight: bolder;">
             Term
         </div>
+
         <div class="col border" style="font-size: 25px; font-weight: bolder;">
             Definition
         </div>
+
     </div>
 
+    <!-- Iterates through each flashcard to display the term and definition -->
     {% for list in cards %}
+
         <div class="row align-items-start">
+
                 <div class="col" style="font-size: 18px;">
                     {{ list.term }}
                 </div>
@@ -85,26 +164,38 @@ slide" style="margin: 5%;">
                 <div class="col" style="font-size: 18px;">
                     {{ list.definition }}
                 </div>
+
         </div>
     {% endfor %}
+
 </div>
 
-<!-- Pomodoro Timer -->
-<div class="d-flex flex-column justify-content-center border" style="background-color: #282829;">
+<!-- To create the container necessary for storing the pomodoro timer -->
+<div class="d-flex flex-column justify-content-center border" 
+style="background-color: #282829;">
+
     <h3 class="border" style="text-align: center;">Pomodoro Timer</h3>
 
+    <!-- Displays the timer when the user starts pomodoro -->
     <div>
-        <h1 class="time" style="text-align: center; padding:5%; font-size: 150px; font-weight: bolder;">25:00</h1>
+        <h1 class="time" style="text-align: center; 
+        padding:5%; font-size: 150px; font-weight: bolder;">25:00</h1>
     </div>
 
+    <!-- Tracks the progress made through the pomodoro to have breaks -->
     <div>
-        <h4 class="progress_track" style="text-align: center; font-size: 30px;">0</h4>
+        <h4 class="progress_track" 
+        style="text-align: center; font-size: 30px;">0</h4>
     </div>
 
+    <!-- To run the pomodoro timer -->
     <div class="d-flex justify-content-center" style="padding: 1%;">
+
         <button type="button" class="btn btn-primary timer">
             Time to focus.
         </button>
+
      </div>
+     
 </div>
 {% endblock %}
