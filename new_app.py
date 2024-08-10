@@ -85,7 +85,7 @@ class MainApp(Flask):
                     (user_name, hash_key)
                     )
 
-                self.__db.commit()
+                self.__db.commit_query()
                 self.__db.close_connection()
 
                 session["user"] = user_name
@@ -130,15 +130,81 @@ class MainApp(Flask):
 
                 session["user"] = user
 
-                self.__db.commit()
-                self.__db.close()
+                self.__db.commit_query()
+                self.__db.close_connection()
 
                 return redirect("/sets")
 
             # Closes out any user information logged in
             session.clear()
 
-            return render_template("login.html")        
+            return render_template("login.html")    
+
+        @self.__app.route("/error")
+        def error():
+            error_reason = request.args.get("message")
+            code = request.args.get("code")
+            return render_template("error.html", code=error_reason), code   
+
+        @self.__app.route("/sets", methods=["GET", "POST"])
+        def user_sets():
+            user_logged = 'user' in session
+
+            id_info = self.__main_cursor.execute(
+                "SELECT user_id FROM user_info WHERE user_name = ?", 
+                    (session["user"],)
+            )
+
+            user_id = id_info.fetchone()["user_id"]
+
+            set_title = self.__main_cursor.execute(
+                "SELECT card_title FROM card_list WHERE user_id = ?", 
+                (user_id,)
+            )
+
+            sets_names = set_title.fetchall()
+
+            if request.method == "POST":
+                if 'card_name' in request.form:
+                    card_title = request.form.get("card_name")
+
+                    if not card_title:
+                        error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    set_data = self.__main_cursor.execute(
+                        "SELECT * FROM card_list WHERE card_title = ?", 
+                        (card_title,)
+                    )
+
+                    card_names = set_data.fetchone()
+
+                    if card_names:
+                        error_msg = """409 Card already exists in your set. 
+                        Go back!"""
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=409))
+
+                    self.__main_cursor.execute(
+                        """INSERT INTO card_list (user_id, card_title) 
+                        VALUES (?, ?)""", 
+                        (user_id["user_id"], card_title)
+                    )
+
+                    self.__db.commit_query()
+                    self.__db.close_connection()
+
+                    return redirect("/sets")
+
+                if 'card_title' in request.form:
+                    chosen_card = request.form.get("card_title")
+                    session["set"] = chosen_card
+                    session["id"] = user_id["user_id"]
+                    return redirect("/flashcard")
+
+            return render_template("index.html", logged=user_logged,
+                                    name=session["user"], flashcards=sets_names) 
 
 
 if __name__ == "__main__":

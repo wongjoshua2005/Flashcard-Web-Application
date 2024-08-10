@@ -43,6 +43,9 @@ class SQLHelper:
             db = g._database = sqlite3.connect(db_name)
 
         return db
+
+    def commit_query(self):
+        self.__database.commit()
     
     def close_connection(self, exception):
         """
