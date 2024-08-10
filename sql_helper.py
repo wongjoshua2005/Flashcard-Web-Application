@@ -44,7 +44,7 @@ class SQLHelper:
 
         return db
     
-    def __close_connection(self, exception):
+    def close_connection(self, exception):
         """
         The __close_connection() method allows the database connection
         object to close after making changes to the database.
@@ -60,3 +60,10 @@ class SQLHelper:
         # Closes database if connection exists
         if db is not None:
             db.close()
+
+    def retrieve_cursor(self):
+        self.__database.row_factory = sqlite3.Row
+        db_cursor = self.__database.cursor()
+
+        return db_cursor
+
