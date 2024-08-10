@@ -205,6 +205,71 @@ class MainApp(Flask):
 
             return render_template("index.html", logged=user_logged,
                                     name=session["user"], flashcards=sets_names) 
+        
+        @self.__app.route("/flashcard", methods=["GET", "POST"])
+        def flashcard():
+            user_logged = 'user' in session
+            user_set = session["set"]      
+
+            set_data = self.__main_cursor.execute(
+                "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
+            )
+
+            set_id = set_data.fetchone()
+
+            flashcards = self.__main_cursor.execute(
+                "SELECT term, definition FROM flashcard WHERE card_set = ?",
+                (set_id["id"],)
+            )
+
+            cards_list = flashcards.fetchall()
+
+            implement_dummy = not cards_list
+
+            if request.method == "POST":
+                new_term = request.form.get("term")
+                new_definition = request.form.get("definition")
+
+                if not new_term or not new_definition:
+                    error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
+                
+                verify_term = self.__main_cursor.execute(
+                """SELECT * FROM flashcard WHERE term = ? 
+                AND user_id = ? AND card_set = ?""",
+                (new_term, session["id"], int(set_id["id"]))
+                )
+
+                result = verify_term.fetchone()
+
+                if result:
+                    error_msg = """409 Conflict! Flashcard already exists! 
+                    Use update button!!!"""
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=409))
+                
+                set_data = self.__main_cursor.execute(
+                    "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
+                )
+
+                set_id = set_data.fetchone()
+
+                self.__main_cursor.execute(
+                """INSERT INTO flashcard (user_id, card_set, term, definition) 
+                VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
+                                        new_term, new_definition)
+                )
+
+                self.__db.commit_query()
+                self.__db.close_connection()
+
+                return redirect("/flashcard")       
+
+            return render_template("flashcard.html", logged=user_logged,
+                                    name=user_set, cards=cards_list,
+                                    empty_list=implement_dummy)
+
 
 
 if __name__ == "__main__":

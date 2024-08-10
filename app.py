@@ -198,7 +198,7 @@ def user_sets():
                             name=session["user"], flashcards=all_titles)
 
 @app.route("/flashcard", methods=["GET", "POST"])
-def enter_flashcard():
+def flashcard():
     user_logged = 'user' in session
     user_set = session["set"]
 
