@@ -10,7 +10,7 @@ class SQLHelper:
     a dictionary, and executing queries.
     """
 
-    def __init__(self, database_name):
+    def __init__(self, app, database_name):
         """
         The constructor for the class will create a single database that
         can be modified based on the reference. Useful for having one reference
@@ -19,7 +19,11 @@ class SQLHelper:
         Args:
             database_name (String): The name of the database to connect
         """
-        self.__database = self.__get_db(database_name)
+
+        self.__app = app
+
+        with self.__app.app_context():
+            self.__database = self.__get_db(database_name)
 
     def __get_db(self, db_name):
         """

@@ -1,270 +1,274 @@
+"""
+Joshua Wong
+Summer 2024
+app.py
+"""
+
+# To retrieve the password encryption, Flask framework, and SQLite modifications
 from flask import (
-    Flask, render_template, request, redirect, session, g, url_for
+    Flask, render_template, request, redirect, session, url_for
 )
-from flask_session import Session
-import sqlite3
 import bcrypt
+from flask_session import Session
+from sql_helper import SQLHelper
 
-app = Flask(__name__)
+class MainApp(Flask, Session):
+    """
+    The MainApp class represents the implementation of the Flask framework
+    to handle backend, routes for the HTML pages, and Jinja implementations. 
+    In addition, MainApp is useful for providing most SQLite functionality
+    and access to multiple libraries to do password encryption and sessions.
+    """
 
-DATABASE = "user_database.db"
-# Database connection information
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-    return db
+    def __init__(self):
+        """
+        The constructor for the class will help initialize the Flask framework
+        and setting up all the routes necessary for the HTML page
+        interactivity.
+        """
+        super().__init__(__name__)
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
+        self.__DATABASE = "user_database.db"
 
-def make_dicts(cursor, row):
-    return dict((cursor.description[idx][0], value)
-                for idx, value in enumerate(row))
+        # Set up the session configuration for the user to stay logged in
+        self.config["SESSION_PERMANENT"] = False
+        self.config["SESSION_TYPE"] = "filesystem"
+        Session(self)
 
-# Session information
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+        self.__routes()
 
-@app.route("/", methods=["GET", "POST"])
-def register():
-    if 'user' in session:
-        return redirect("/sets")
-
-    if request.method == "POST":
-        user_name = request.form.get("username")
-        password = request.form.get("password")
-        confirm_pass = request.form.get("confirm_pass")
-
-        if not user_name or not password or not confirm_pass:
-            error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
-            return redirect(url_for("error", message=error_msg, code=404))
-
-        if password != confirm_pass:
-            error_msg = "404...Invalid Password Verification!!! :C"
-            return redirect(url_for("error", message=error_msg, code=404))
+    def __routes(self):
         
-        main_db = get_db()
-        main_db.row_factory = make_dicts
+        @self.route("/", methods=["GET", "POST"])
+        def register():
+            if 'user' in session:
+                return redirect("/sets")
 
-        main_cursor = main_db.cursor()
+            if request.method == "POST":
+                user_name = request.form.get("username")
+                password = request.form.get("password")
+                confirm_pass = request.form.get("confirm_pass")
 
-        data = main_cursor.execute(
-            "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
-        )
+                if not user_name or not password or not confirm_pass:
+                    error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
 
-        user_list = data.fetchone()
+                if password != confirm_pass:
+                    error_msg = "404...Invalid Password Verification!!! :C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
+                
+                db = SQLHelper(self, self.__DATABASE)
+                main_cursor = db.retrieve_cursor()
 
-        if user_list:
-            error_msg = "409 Conflict! Username is already taken!!! >:C"
-            return redirect(url_for("error", message=error_msg, code=409))
+                users_data = main_cursor.execute(
+                    "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
+                )
 
-        pass_bytes = password.encode("utf-8")
+                user = users_data.fetchone()
 
-        salt_key = bcrypt.gensalt()
+                if user:
+                    error_msg = "409 Conflict! Username is already taken!!! >:C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=409))
 
-        hash_key = bcrypt.hashpw(pass_bytes, salt_key)
+                pass_bytes = password.encode("utf-8")
+                salt_key = bcrypt.gensalt()
+                hash_key = bcrypt.hashpw(pass_bytes, salt_key)
 
-        main_cursor.execute(
-            "INSERT INTO user_info (user_name, hash) VALUES (?, ?)", 
-            (user_name, hash_key)
+                main_cursor.execute(
+                    "INSERT INTO user_info (user_name, hash) VALUES (?, ?)", 
+                    (user_name, hash_key)
+                    )
+
+                db.commit_query()
+                db.close_connection()
+
+                session["user"] = user_name
+
+                return redirect("/sets")
+
+            return render_template("register.html")
+
+        @self.route("/login", methods=["GET", "POST"])
+        def login():
+            if request.method == "POST":
+                user = request.form.get("username")
+                password = request.form.get("password")
+
+                if not user or not password:
+                    error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
+
+                user_name = self.__main_cursor.execute(
+                    "SELECT * FROM user_info WHERE user_name = ?", (user,)
+                )
+
+                verify_user = user_name.fetchone()
+
+                if not verify_user:
+                    error_msg = """404...Username doesn't exist in the database 
+                    :CCCC"""
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
+
+                encode_pass = password.encode("utf-8")
+
+                pass_hash = verify_user["hash"]
+
+                result = bcrypt.checkpw(encode_pass, pass_hash)
+
+                if not result:
+                    error_msg = "401...Invalid password!!!"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=401))
+
+                session["user"] = user
+
+                self.__db.commit_query()
+                self.__db.close_connection()
+
+                return redirect("/sets")
+
+            # Closes out any user information logged in
+            session.clear()
+
+            return render_template("login.html")    
+
+        @self.route("/error")
+        def error():
+            error_reason = request.args.get("message")
+            code = request.args.get("code")
+            return render_template("error.html", code=error_reason), code   
+
+        @self.route("/sets", methods=["GET", "POST"])
+        def user_sets():
+            user_logged = 'user' in session
+
+            id_info = self.__main_cursor.execute(
+                "SELECT user_id FROM user_info WHERE user_name = ?", 
+                    (session["user"],)
             )
 
-        main_db.commit()
-        main_db.close()
+            user_id = id_info.fetchone()["user_id"]
 
-        session["user"] = user_name
-
-        return redirect("/sets")
-
-    return render_template("register.html")
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-
-    if request.method == "POST":
-        user = request.form.get("username")
-        password = request.form.get("password")
-
-        if not user or not password:
-            error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
-            return redirect(url_for("error", message=error_msg, code=404))
-        
-        main_db = get_db()
-        main_db.row_factory = make_dicts
-
-        cursor = main_db.cursor()
-
-        user_data = cursor.execute(
-            "SELECT * FROM user_info WHERE user_name = ?", (user,)
-        )
-
-        users_list = user_data.fetchone()
-
-        if not users_list:
-            error_msg = "404...Username doesn't exist in the database :CCCC"
-            return redirect(url_for("error", message=error_msg, code=404))
-
-        encode_pass = password.encode("utf-8")
-
-        verify_pass = users_list["hash"]
-
-        print(verify_pass)
-
-        result = bcrypt.checkpw(encode_pass, verify_pass)
-
-        if not result:
-            error_msg = "401...Invalid password!!!"
-            return redirect(url_for("error", message=error_msg, code=401))
-
-        session["user"] = user
-
-        main_db.commit()
-        main_db.close()
-
-        return redirect("/sets")
-
-    # Closes out any user information logged in
-    session.clear()
-
-    return render_template("login.html")
-
-@app.route("/error")
-def error():
-    error_reason = request.args.get("message")
-    code = request.args.get("code")
-    return render_template("error.html", code=error_reason), code
-    
-
-@app.route("/sets", methods=["GET", "POST"])
-def user_sets():
-    user_logged = 'user' in session
-    main_db = get_db()
-    main_db.row_factory = make_dicts
-    main_cursor = main_db.cursor()
-
-    retrieve_id = main_cursor.execute(
-        "SELECT user_id FROM user_info WHERE user_name = ?", 
-            (session["user"],)
-    )
-
-    id = retrieve_id.fetchone()
-
-    info = main_cursor.execute(
-        "SELECT card_title FROM card_list WHERE user_id = ?", (id["user_id"],)
-    )
-
-    all_titles = info.fetchall()
-
-    if request.method == "POST":
-        if 'card_name' in request.form:
-            card_title = request.form.get("card_name")
-
-            if not card_title:
-                error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
-                return redirect(url_for("error", message=error_msg, code=404))
-
-            data = main_cursor.execute(
-                "SELECT * FROM card_list WHERE card_title = ?", (card_title,)
+            set_title = self.__main_cursor.execute(
+                "SELECT card_title FROM card_list WHERE user_id = ?", 
+                (user_id,)
             )
 
-            card_names = data.fetchone()
+            sets_names = set_title.fetchall()
 
-            if card_names:
-                error_msg = "409 Card already exists in your set. Go back!"
-                return redirect(url_for("error", message=error_msg, code=409))
+            if request.method == "POST":
+                if 'card_name' in request.form:
+                    card_title = request.form.get("card_name")
 
-            main_cursor.execute(
-                "INSERT INTO card_list (user_id, card_title) VALUES (?, ?)", 
-                (id["user_id"], card_title)
+                    if not card_title:
+                        error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    set_data = self.__main_cursor.execute(
+                        "SELECT * FROM card_list WHERE card_title = ?", 
+                        (card_title,)
+                    )
+
+                    card_names = set_data.fetchone()
+
+                    if card_names:
+                        error_msg = """409 Card already exists in your set. 
+                        Go back!"""
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=409))
+
+                    self.__main_cursor.execute(
+                        """INSERT INTO card_list (user_id, card_title) 
+                        VALUES (?, ?)""", 
+                        (user_id["user_id"], card_title)
+                    )
+
+                    self.__db.commit_query()
+                    self.__db.close_connection()
+
+                    return redirect("/sets")
+
+                if 'card_title' in request.form:
+                    chosen_card = request.form.get("card_title")
+                    session["set"] = chosen_card
+                    session["id"] = user_id["user_id"]
+                    return redirect("/flashcard")
+
+            return render_template("index.html", logged=user_logged,
+                                    name=session["user"], flashcards=sets_names) 
+        
+        @self.route("/flashcard", methods=["GET", "POST"])
+        def flashcard():
+            user_logged = 'user' in session
+            user_set = session["set"]      
+
+            set_data = self.__main_cursor.execute(
+                "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
             )
 
-            main_db.commit()
-            main_db.close()
+            set_id = set_data.fetchone()
 
-            return redirect("/sets")
+            flashcards = self.__main_cursor.execute(
+                "SELECT term, definition FROM flashcard WHERE card_set = ?",
+                (set_id["id"],)
+            )
 
-        if 'card_title' in request.form:
-            chosen_card = request.form.get("card_title")
-            session["set"] = chosen_card
-            session["id"] = id["user_id"]
-            return redirect("/flashcard")
+            cards_list = flashcards.fetchall()
 
-    return render_template("index.html", logged=user_logged,
-                            name=session["user"], flashcards=all_titles)
+            implement_dummy = not cards_list
 
-@app.route("/flashcard", methods=["GET", "POST"])
-def flashcard():
-    user_logged = 'user' in session
-    user_set = session["set"]
+            if request.method == "POST":
+                new_term = request.form.get("term")
+                new_definition = request.form.get("definition")
 
-    main_db = get_db()
-    main_db.row_factory = make_dicts
-    main_cursor = main_db.cursor()        
+                if not new_term or not new_definition:
+                    error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=404))
+                
+                verify_term = self.__main_cursor.execute(
+                """SELECT * FROM flashcard WHERE term = ? 
+                AND user_id = ? AND card_set = ?""",
+                (new_term, session["id"], int(set_id["id"]))
+                )
 
-    set_data = main_cursor.execute(
-        "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
-    )
+                result = verify_term.fetchone()
 
-    set_id = set_data.fetchone()
+                if result:
+                    error_msg = """409 Conflict! Flashcard already exists! 
+                    Use update button!!!"""
+                    return redirect(url_for("error", 
+                                            message=error_msg, code=409))
+                
+                set_data = self.__main_cursor.execute(
+                    "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
+                )
 
-    flashcards = main_cursor.execute(
-        "SELECT term, definition FROM flashcard WHERE card_set = ?",
-          (set_id["id"],)
-    )
+                set_id = set_data.fetchone()
 
-    cards_list = flashcards.fetchall()
+                self.__main_cursor.execute(
+                """INSERT INTO flashcard (user_id, card_set, term, definition) 
+                VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
+                                        new_term, new_definition)
+                )
 
-    implement_dummy = not cards_list
+                self.__db.commit_query()
+                self.__db.close_connection()
 
-    if request.method == "POST":
-        new_term = request.form.get("term")
-        new_definition = request.form.get("definition")
+                return redirect("/flashcard")       
 
-        if not new_term or not new_definition:
-            error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
-            return redirect(url_for("error", message=error_msg, code=404))
-        
-        verify_term = main_cursor.execute(
-        """SELECT * FROM flashcard WHERE term = ? 
-        AND user_id = ? AND card_set = ?""",
-        (new_term, session["id"], int(set_id["id"]))
-        )
+            return render_template("flashcard.html", logged=user_logged,
+                                    name=user_set, cards=cards_list,
+                                    empty_list=implement_dummy)
 
-        result = verify_term.fetchone()
 
-        print(result)
 
-        if result:
-            error_msg = """409 Conflict! Flashcard already exists! Use update
-            button!!!"""
-            return redirect(url_for("error", message=error_msg, code=409))
-        
-        set_data = main_cursor.execute(
-            "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
-        )
-
-        set_id = set_data.fetchone()
-
-        main_cursor.execute(
-        """INSERT INTO flashcard (user_id, card_set, term, definition) 
-        VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
-                                  new_term, new_definition)
-        )
-
-        main_db.commit()
-        main_db.close()
-
-        return redirect("/flashcard")       
-
-    return render_template("flashcard.html", logged=user_logged,
-                            name=user_set, cards=cards_list,
-                              empty_list=implement_dummy)
-
-# Debuggging purposes
 if __name__ == "__main__":
-    app.run(debug=True)
+    run_instance = MainApp()
+    run_instance.run()
