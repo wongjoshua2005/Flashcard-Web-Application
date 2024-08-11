@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () =>
             // To restart the timer if the user got distracted
             else if (reset_timer)
             {
+                clearInterval();
                 curr_mins = POMO_START;
                 curr_secs = FIXED_SECS;
                 count_progress = 0;

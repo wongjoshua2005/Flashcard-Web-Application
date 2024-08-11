@@ -6,13 +6,52 @@ app.py
 
 # To retrieve the password encryption, Flask framework, and SQLite modifications
 from flask import (
-    Flask, render_template, request, redirect, session, url_for
+    Flask, render_template, request, redirect, session, url_for, g
 )
 import bcrypt
 from flask_session import Session
-from sql_helper import SQLHelper
+import sqlite3
 
-class MainApp(Flask, Session):
+def get_db(db_name):
+    """
+    The get_db() function handles starting a new connection for the
+    database and returning that connection back to the user to
+    execute queries.
+
+    Args:
+        db_name (str): The name of the database to start a connection.
+    Returns:
+        Connection: The database object that is connected.
+    """
+    
+    # Searches for the database connection to ensure none are open
+    db = getattr(g, '_database', None)
+
+    # Checks if there are no database connections to establish new
+    # connection
+    if db is None:
+        db = g._database = sqlite3.connect(db_name)
+
+    return db
+
+def retrieve_cursor(database):
+    """
+    The retrieve_cursor() function handles automatically adding
+    a cursor to the database and converting into a dictionary
+    to retrieve information efficiently.
+
+    Args:
+        database: The name of the database to add a cursor.
+    Returns:
+        Cursor: To allow the database to execute queries. 
+    """
+
+    database.row_factory = sqlite3.Row
+    db_cursor = database.cursor()
+
+    return db_cursor
+
+class MainApp(Flask):
     """
     The MainApp class represents the implementation of the Flask framework
     to handle backend, routes for the HTML pages, and Jinja implementations. 
@@ -26,8 +65,11 @@ class MainApp(Flask, Session):
         and setting up all the routes necessary for the HTML page
         interactivity.
         """
+
+        # Creates the Flask app initialization
         super().__init__(__name__)
 
+        # Store the name of the database for this application
         self.__DATABASE = "user_database.db"
 
         # Set up the session configuration for the user to stay logged in
@@ -35,12 +77,26 @@ class MainApp(Flask, Session):
         self.config["SESSION_TYPE"] = "filesystem"
         Session(self)
 
+        # Runs all routes necessary for interacting with the website
         self.__routes()
 
     def __routes(self):
-        
+        """
+        The __routes() method runs inside the constructor used for starting
+        the application. The method allows all routes to be registered and 
+        running for interactivity with the HTML forms.
+        """
+
         @self.route("/", methods=["GET", "POST"])
         def register():
+            """
+            The register() method sets the route to the default sign up
+            page when you first enter into the website. This page only exists
+            for people who are new to the application and wants to sign up.
+
+            
+            """
+
             if 'user' in session:
                 return redirect("/sets")
 
@@ -59,8 +115,8 @@ class MainApp(Flask, Session):
                     return redirect(url_for("error", 
                                             message=error_msg, code=404))
                 
-                db = SQLHelper(self, self.__DATABASE)
-                main_cursor = db.retrieve_cursor()
+                db = get_db(self.__DATABASE)
+                main_cursor = retrieve_cursor(db)
 
                 users_data = main_cursor.execute(
                     "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
@@ -82,8 +138,8 @@ class MainApp(Flask, Session):
                     (user_name, hash_key)
                     )
 
-                db.commit_query()
-                db.close_connection()
+                db.commit()
+                db.close()
 
                 session["user"] = user_name
 
@@ -102,7 +158,10 @@ class MainApp(Flask, Session):
                     return redirect(url_for("error", 
                                             message=error_msg, code=404))
 
-                user_name = self.__main_cursor.execute(
+                db = get_db(self.__DATABASE)
+                main_cursor = retrieve_cursor(db)
+
+                user_name = main_cursor.execute(
                     "SELECT * FROM user_info WHERE user_name = ?", (user,)
                 )
 
@@ -127,8 +186,8 @@ class MainApp(Flask, Session):
 
                 session["user"] = user
 
-                self.__db.commit_query()
-                self.__db.close_connection()
+                db.commit()
+                db.close()
 
                 return redirect("/sets")
 
@@ -147,16 +206,19 @@ class MainApp(Flask, Session):
         def user_sets():
             user_logged = 'user' in session
 
-            id_info = self.__main_cursor.execute(
+            db = get_db(self.__DATABASE)
+            main_cursor = retrieve_cursor(db)
+
+            id_info = main_cursor.execute(
                 "SELECT user_id FROM user_info WHERE user_name = ?", 
                     (session["user"],)
             )
 
-            user_id = id_info.fetchone()["user_id"]
+            user_id = id_info.fetchone()
 
-            set_title = self.__main_cursor.execute(
+            set_title = main_cursor.execute(
                 "SELECT card_title FROM card_list WHERE user_id = ?", 
-                (user_id,)
+                (user_id["user_id"],)
             )
 
             sets_names = set_title.fetchall()
@@ -170,7 +232,7 @@ class MainApp(Flask, Session):
                         return redirect(url_for("error", 
                                                 message=error_msg, code=404))
 
-                    set_data = self.__main_cursor.execute(
+                    set_data = main_cursor.execute(
                         "SELECT * FROM card_list WHERE card_title = ?", 
                         (card_title,)
                     )
@@ -183,14 +245,14 @@ class MainApp(Flask, Session):
                         return redirect(url_for("error", 
                                                 message=error_msg, code=409))
 
-                    self.__main_cursor.execute(
+                    main_cursor.execute(
                         """INSERT INTO card_list (user_id, card_title) 
                         VALUES (?, ?)""", 
                         (user_id["user_id"], card_title)
                     )
 
-                    self.__db.commit_query()
-                    self.__db.close_connection()
+                    db.commit()
+                    db.close()
 
                     return redirect("/sets")
 
@@ -206,15 +268,18 @@ class MainApp(Flask, Session):
         @self.route("/flashcard", methods=["GET", "POST"])
         def flashcard():
             user_logged = 'user' in session
-            user_set = session["set"]      
+            user_set = session["set"]     
 
-            set_data = self.__main_cursor.execute(
+            db = get_db(self.__DATABASE)
+            main_cursor = retrieve_cursor(db)
+
+            set_data = main_cursor.execute(
                 "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
             )
 
             set_id = set_data.fetchone()
 
-            flashcards = self.__main_cursor.execute(
+            flashcards = main_cursor.execute(
                 "SELECT term, definition FROM flashcard WHERE card_set = ?",
                 (set_id["id"],)
             )
@@ -232,7 +297,7 @@ class MainApp(Flask, Session):
                     return redirect(url_for("error", 
                                             message=error_msg, code=404))
                 
-                verify_term = self.__main_cursor.execute(
+                verify_term = main_cursor.execute(
                 """SELECT * FROM flashcard WHERE term = ? 
                 AND user_id = ? AND card_set = ?""",
                 (new_term, session["id"], int(set_id["id"]))
@@ -246,28 +311,26 @@ class MainApp(Flask, Session):
                     return redirect(url_for("error", 
                                             message=error_msg, code=409))
                 
-                set_data = self.__main_cursor.execute(
+                set_data = main_cursor.execute(
                     "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
                 )
 
                 set_id = set_data.fetchone()
 
-                self.__main_cursor.execute(
+                main_cursor.execute(
                 """INSERT INTO flashcard (user_id, card_set, term, definition) 
                 VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
                                         new_term, new_definition)
                 )
 
-                self.__db.commit_query()
-                self.__db.close_connection()
+                db.commit()
+                db.close()
 
                 return redirect("/flashcard")       
 
             return render_template("flashcard.html", logged=user_logged,
                                     name=user_set, cards=cards_list,
                                     empty_list=implement_dummy)
-
-
 
 if __name__ == "__main__":
     run_instance = MainApp()
