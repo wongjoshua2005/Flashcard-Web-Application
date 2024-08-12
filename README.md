@@ -1,11 +1,11 @@
 # Flashcard-Web-Application
-#### Description: 
+## Description: 
 Charming Flashcards is a web application that uses Flask, Python, Bootstrap, SQLite3, HTML/CSS, and JavaScript. 
 The purpose of this program is to make users not be distracted by other websites and make a loud beep. 
 In addition, the web application has a simple and user-friendly interface in dark mode
 to make your eyes more relaxed when studying.
 
-#### Features:
+## Features:
 The application has the following features:
 1. Create an account to log into every time to study
 2. Create a set and manage sets
@@ -27,7 +27,7 @@ assignments and making my programs from scratch. My college never taught me any 
 
 
 
-#### Files:
+## Files:
 1. The **.venv** and **_pycache_** folders manage all third-party pip installations and Python versions for bcrypt password encryption, flask framework, and sqlite3.
 2. The **flask_session** folder handles all session details to save when the user logs back into the web application.
 3. The **static** folder keeps all CSS and JavaScript files necessary for dealing with the Pomodoro timer, alarm, and the background styles of the web application.
