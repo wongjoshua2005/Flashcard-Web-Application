@@ -5,58 +5,126 @@
 <h1 class="text-center">Welcome, {{ name }}! &#128522;</h1>
 
 <!-- To run the modal model for creating a new set -->
- <div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center gap-4">
 
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-    data-bs-target="#exampleModal">
-        Create Set
-    </button>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+  data-bs-target="#exampleModal">
+    Create Set
+  </button>
 
- </div>
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+  data-bs-target="#exampleModal2">
+    Rename Set
+  </button>
 
- <!-- To display the necessary steps to creating a set -->
- <div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" 
- aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+  data-bs-target="#exampleModal3">
+    Delete Set
+  </button>
 
-    <!-- Necessary Bootstrap containers to create the visuals -->
-    <div class="modal-dialog">
-      <div class="modal-content">
+</div>
+
+<!-- To display the modal box for to creating a set -->
+<div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" 
+aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+  <!-- Necessary Bootstrap containers to create the visuals -->
+  <div class="modal-dialog">
+    <div class="modal-content">
         
-        <!-- To display the top title what the user is doing -->
-        <div class="modal-header">
+      <!-- To display the top title what the user is doing -->
+      <div class="modal-header">
 
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Create a new set! :D</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-
-        </div>
-
-        <!-- Prompt the user to enter inputs for creating new set -->
-        <div class="modal-body">
-
-          <!-- Runs a specific condition with Flask method based on the name -->
-          <form action="/sets" method="post" name="form1">
-
-            <!-- Ask user what to name their set that is not blank -->
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Name:</label>
-              <input type="text" name="card_name" 
-              class="form-control user_input" id="flashcard-name" required>
-            </div>
-
-            <!-- Runs Flask method that creates a new set in the database -->
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Make Set</button>
-            </div>
-
-          </form>
-
-        </div>
+        <h1 class="modal-title fs-5" id="exampleModalLabel">
+          Create a new set! :D
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" 
+        aria-label="Close"></button>
 
       </div>
-    </div>
+      <!-- Prompt the user to enter inputs for creating new set -->
+      <div class="modal-body">
 
+        <!-- Runs a specific condition with Flask method based on the name -->
+        <form action="/sets" method="post" name="form1">
+
+          <!-- Ask user what to name their set that is not blank -->
+          <div class="mb-3">
+
+              <label for="recipient-name" class="col-form-label">Name:</label>
+              <input type="text" name="create" 
+              class="form-control user_input" id="flashcard-name" required>
+
+          </div>
+
+          <!-- Runs Flask method that creates a new set in the database -->
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Make Set</button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
   </div>
 
+</div>
+
+<!-- To display the modal box for renaming a set -->
+<div data-bs-theme="dark" class="modal fade" id="exampleModal2" tabindex="-1" 
+aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+  <!-- Necessary Bootstrap containers to create the visuals -->
+  <div class="modal-dialog">
+    <div class="modal-content">
+        
+      <!-- To display the top title what the user is doing -->
+      <div class="modal-header">
+
+        <h1 class="modal-title fs-5" id="exampleModalLabel">
+          Rename your set ;D
+        </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" 
+        aria-label="Close"></button>
+
+      </div>
+      <!-- Prompt the user to enter inputs for creating new set -->
+      <div class="modal-body">
+
+        <!-- Runs a specific condition with Flask method based on the name -->
+        <form action="/sets" method="post" name="rename">
+
+          <!-- Ask user what to name their set that is not blank -->
+          <div class="mb-3">
+
+              <label for="recipient-name" class="col-form-label">
+                New Name:
+              </label>
+              <input type="text" name="rename" 
+              class="form-control user_input" id="flashcard-name" required>
+
+              <label for="recipient-name" class="col-form-label">
+                Old Name:
+              </label>
+              <input type="text" name="old_name" 
+              class="form-control user_input" id="flashcard-name" required>
+
+          </div>
+
+          <!-- Runs Flask method that creates a new set in the database -->
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Make Set</button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
   <!-- 
   To run the default set design after user created a set or display 
   the actual set 
@@ -85,7 +153,7 @@
              A workaround to retrieve the set title to run Flask
              method when entering the set 
             -->
-            <input type="hidden" name="card_title" 
+            <input type="hidden" name="display_set" 
             value="{{ card.card_title }}">
 
             <!-- Sends information retrieved from this from to Flask method -->

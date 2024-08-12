@@ -285,6 +285,11 @@ class MainApp(Flask):
             # To change the navigation bar options when user logged in
             user_logged = 'user' in session
 
+            # Prevent the user from trying to access sets after not signed in
+            if not user_logged:
+                session.clear()
+                return redirect("/")
+
             # To retrieve the database to search up and make query commits
             db = get_db(self.__DATABASE)
             main_cursor = retrieve_cursor(db)
@@ -310,9 +315,9 @@ class MainApp(Flask):
             if request.method == "POST":
 
                 # To add set name into the user's database 
-                if 'card_name' in request.form:
+                if 'create' in request.form:
 
-                    card_title = request.form.get("card_name")
+                    card_title = request.form.get("create")
 
                     # To verify if the set title is not in the database
                     if not card_title:
@@ -323,8 +328,9 @@ class MainApp(Flask):
                     # To search in the collection of sets if name already
                     # taken
                     set_data = main_cursor.execute(
-                        "SELECT * FROM card_list WHERE card_title = ?", 
-                        (card_title,)
+                        """SELECT * FROM card_list WHERE card_title = ? 
+                        AND user_id = ?""", 
+                        (card_title, user_id["user_id"])
                     )
 
                     card_names = set_data.fetchone()
@@ -350,12 +356,52 @@ class MainApp(Flask):
 
                     return redirect("/sets")
 
+                # To allow the user to rename their set
+                if 'rename' in request.form:
+                    
+                    # To perform an update to the database
+                    new_name = request.form.get("rename")
+                    old_name = request.form.get("old_name")
+
+                    # Warn user of trying to enter blank inputs
+                    if not new_name or not old_name:
+                        error_msg = "404 BLANK INPUTS!!! >:CCCCC"
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))   
+                    
+                    # To check if the set already exists in the user's database
+                    list_of_sets = []   
+                    for v in sets_names:
+                        list_of_sets.append(v["card_title"])
+
+
+                    # Warns user of trying to change name of an invalid set
+                    if old_name not in list_of_sets:
+                        error_msg = "404! Set does not exist :C *cry* *cry*"
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    # To permanently change the old set title with new set
+                    # title 
+                    main_cursor.execute(
+                        """UPDATE card_list SET card_title = ?
+                        WHERE user_id = ? AND card_title = ?""", 
+                        (new_name, user_id["user_id"], old_name)
+                    )
+
+                    db.commit()
+                    db.close()  
+
+                    return redirect("/sets")              
+
                 # To go into the specific set to start studying
-                if 'card_title' in request.form:
+                if 'display_set' in request.form:
                     # To retrieve all user information and the set name to
                     # run the flashcards
 
-                    chosen_card = request.form.get("card_title")
+                    chosen_card = request.form.get("display_set")
                     session["set"] = chosen_card
                     session["id"] = user_id["user_id"]
 
@@ -383,7 +429,12 @@ class MainApp(Flask):
             # Sets the title and shows specific navigation bars buttons when
             # logged in
             user_logged = 'user' in session
-            user_set = session["set"]     
+            user_set = session["set"]  
+
+            # Prevent the user from trying to access sets after not signed in
+            if not user_logged:
+                session.clear()
+                return redirect("/")   
 
             # Creates the database connection to make query commits
             db = get_db(self.__DATABASE)
@@ -460,3 +511,7 @@ class MainApp(Flask):
             return render_template("flashcard.html", logged=user_logged,
                                     name=user_set, cards=cards_list,
                                     empty_list=implement_dummy)
+
+# Runs the server necessary to start using the web application (for now)
+if __name__ == "__main__":
+    MainApp().run()

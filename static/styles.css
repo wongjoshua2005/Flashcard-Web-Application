@@ -1,6 +1,13 @@
+/* 
+Joshua Wong
+Summer 2024
+styles.css
+*/
+
 *
 {
     color: white;
+    user-select: none;
 }
 
 p
@@ -27,10 +34,4 @@ label
 .carousel-item:hover
 {
     cursor: pointer;
-}
-
-/* Make the input placeholder white when having dark background */
-.dark-placeholder::placeholder 
-{
-    color: white !important;
 }
