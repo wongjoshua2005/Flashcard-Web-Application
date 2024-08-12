@@ -17,8 +17,7 @@ The application has the following features:
 
 
 
-
-
+## Reflection:
 A major problem I had throughout making the web application was to store the Flask application in a class to use OOP. I thought that not using OOP would have been 
 more beneficial, but I wanted to use the knowledge I learned during my first year of computer science. Unfortunately, I regret making that decision because
 the Flask framework does not like to be turned into a class, and sometimes making workarounds is too much to sacrifice for little benefits. I do believe that
