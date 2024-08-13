@@ -394,13 +394,64 @@ class MainApp(Flask):
                     db.commit()
                     db.close()  
 
-                    return redirect("/sets")              
+                    return redirect("/sets")
+
+                if 'delete' in request.form:
+                    user_request = request.form.get("delete")
+
+                    # Warn user of trying to enter blank inputs
+                    if not user_request:
+                        error_msg = "404 BLANK INPUTS!!! >:CCCCC"
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    # To check if the set already exists in the user's database
+                    list_of_sets = []   
+                    for v in sets_names:
+                        list_of_sets.append(v["card_title"])
+
+
+                    # Warns user of trying to change name of an invalid set
+                    if user_request not in list_of_sets:
+                        error_msg = "404! Set does not exist :C *cry* *cry*"
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    # To run through all sets that the user contained in the database
+                    set_id = main_cursor.execute(
+                        """SELECT id FROM card_list WHERE user_id = ? AND
+                        card_title = ?""", 
+                        (user_id["user_id"], user_request)
+                    )
+
+                    result_id = set_id.fetchone()
+
+                    # To permanently change the old set title with new set
+                    # title 
+                    main_cursor.execute(
+                        """DELETE FROM flashcard WHERE card_set = ? AND
+                        user_id = ?""", 
+                        (result_id["id"], user_id["user_id"])
+                    )
+
+                    main_cursor.execute(
+                        """DELETE FROM card_list WHERE id = ? AND
+                        user_id = ?""", 
+                        (result_id["id"], user_id["user_id"])
+                    )
+
+                    db.commit()
+                    db.close()
+
+                    return redirect("/sets")
 
                 # To go into the specific set to start studying
                 if 'display_set' in request.form:
+                    
                     # To retrieve all user information and the set name to
                     # run the flashcards
-
                     chosen_card = request.form.get("display_set")
                     session["set"] = chosen_card
                     session["id"] = user_id["user_id"]

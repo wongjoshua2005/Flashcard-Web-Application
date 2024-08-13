@@ -12,73 +12,88 @@
         Create flashcard
     </button>
 
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+    data-bs-target="#exampleModal">
+        C
+    </button>
+
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+    data-bs-target="#exampleModal">
+        Create flashcard
+    </button>
+
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+    data-bs-target="#exampleModal">
+        Create flashcard
+    </button>
+
  </div>
 
 <!-- To display the necessary steps to creating a a valid flashcard -->
- <div data-bs-theme="dark" class="modal fade" id="exampleModal" 
+<div data-bs-theme="dark" class="modal fade" id="exampleModal" 
  tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 
-    <!-- Necessary Bootstrap containers to create the visuals -->
-    <div class="modal-dialog">
-      <div class="modal-content">
+  <!-- Necessary Bootstrap containers to create the visuals -->
+  <div class="modal-dialog">
+    <div class="modal-content">
 
-        <!-- To display the top title what the user is doing -->
-        <div class="modal-header">
+      <!-- To display the top title what the user is doing -->
+      <div class="modal-header">
 
-          <h1 class="modal-title fs-5" id="exampleModalLabel">
-            Create a new flashcard
-          </h1>
-          <button type="button" class="btn-close" 
-          data-bs-dismiss="modal" aria-label="Close"></button>
-
-        </div>
-
-        <!-- Prompt the user to enter inputs for creating new flashcard -->
-        <div class="modal-body">
-
-        <!-- Runs a specific condition with Flask method based on the name -->
-          <form action="/flashcard" method="post">
-
-            <!-- Ask for term and definition to create the new flashcard -->
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">
-                Term:
-              </label>
-              <input type="text" name="term" 
-              class="form-control user_input" id="flashcard-name" required>
-
-              <label for="recipient-name" class="col-form-label">
-                Definition:
-              </label>
-              <input type="text" name="definition" 
-              class="form-control user_input" id="flashcard-name" required>
-            </div>
-
-            <!-- 
-            Runs Flask method that creates a flashcard for 
-            the set in the database
-             -->
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Make Card</button>
-            </div>
-
-          </form>
-
-        </div>
+        <h1 class="modal-title fs-5" id="exampleModalLabel">
+          Create a new flashcard
+        </h1>
+        <button type="button" class="btn-close" 
+        data-bs-dismiss="modal" aria-label="Close"></button>
 
       </div>
-    </div>
 
+      <!-- Prompt the user to enter inputs for creating new flashcard -->
+      <div class="modal-body">
+
+      <!-- Runs a specific condition with Flask method based on the name -->
+        <form action="/flashcard" method="post">
+
+          <!-- Ask for term and definition to create the new flashcard -->
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">
+              Term:
+            </label>
+            <input type="text" name="term" 
+            class="form-control user_input" id="flashcard-name" required>
+
+            <label for="recipient-name" class="col-form-label">
+              Definition:
+            </label>
+            <input type="text" name="definition" 
+            class="form-control user_input" id="flashcard-name" required>
+          </div>
+
+          <!-- 
+          Runs Flask method that creates a flashcard for 
+          the set in the database
+           -->
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Make Card</button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
   </div>
+
+</div>
 
 <!-- To display each flashcard and allow interactivity to the card -->
 <div id="carouselExampleIndicators" class="carousel 
 slide" style="margin: 5%;">
 
-    <!-- 
-    The container controls the white border around the card
-     and establishes the background color for the card. 
-    -->
+  <!-- 
+  The container controls the white border around the card
+   and establishes the background color for the card. 
+  -->
     <div class="carousel-inner border" style="background-color: #282829;">
     
     <!-- Dummy card incase the user did not create a flashcard yet -->
