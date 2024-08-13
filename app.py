@@ -167,6 +167,7 @@ class MainApp(Flask):
 
                 # Allows the user to sign back in when they leave the site
                 session["user"] = user_name
+                session["sort_cards"] = False
 
                 return redirect("/sets")
 
@@ -236,6 +237,7 @@ class MainApp(Flask):
 
                 # Logs session to the user to confirm everything works
                 session["user"] = user
+                session["sort_cards"] = False
 
                 db.commit()
                 db.close()
@@ -498,12 +500,23 @@ class MainApp(Flask):
 
             set_id = set_data.fetchone()
 
-            # To run through all the terms and definitions in a graph
-            # for the user to see how many is in their set
-            flashcards = main_cursor.execute(
-                "SELECT term, definition FROM flashcard WHERE card_set = ?",
-                (set_id["id"],)
-            )
+            print(session["sort_cards"])
+
+            if not session["sort_cards"]:
+                # To run through all the terms and definitions in a graph
+                # for the user to see how many is in their set
+                flashcards = main_cursor.execute(
+                    "SELECT term, definition FROM flashcard WHERE card_set = ?",
+                    (set_id["id"],)
+                )
+            else:
+                flashcards = main_cursor.execute(
+                    """SELECT term, definition FROM flashcard 
+                    WHERE card_set = ? ORDER BY RANDOM()""",
+                    (set_id["id"],) )
+                
+                session["sort_cards"] = False
+
 
             cards_list = flashcards.fetchall()
 
@@ -512,52 +525,139 @@ class MainApp(Flask):
 
             # To allow the user to make a new flashcard
             if request.method == "POST":
-                
-                # Retrieve form information and prevents any blanks
-                new_term = request.form.get("term")
-                new_definition = request.form.get("definition")
 
-                if not new_term or not new_definition:
-                    error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=404))
-                
-                # Searches through the flashcards to see if term does not
-                # already exist
-                verify_term = main_cursor.execute(
-                """SELECT * FROM flashcard WHERE term = ? 
-                AND user_id = ? AND card_set = ?""",
-                (new_term, session["id"], int(set_id["id"]))
-                )
+                if 'term' in request.form:
+                    # Retrieve form information and prevents any blanks
+                    new_term = request.form.get("term")
+                    new_definition = request.form.get("definition")
 
-                result = verify_term.fetchone()
+                    if not new_term or not new_definition:
+                        error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+                    
+                    # Searches through the flashcards to see if term does not
+                    # already exist
+                    verify_term = main_cursor.execute(
+                    """SELECT * FROM flashcard WHERE term = ? 
+                    AND user_id = ? AND card_set = ?""",
+                    (new_term, session["id"], int(set_id["id"]))
+                    )
 
-                # To instruct the user on how to properly create a flashcard
-                if result:
-                    error_msg = """409 Conflict! Flashcard already exists! 
-                    Use update button!!!"""
+                    result = verify_term.fetchone()
 
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=409))
-                
-                # To run through the set id based on the set_title
-                set_data = main_cursor.execute(
-                    "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
-                )
+                    # To instruct the user on how to properly create a flashcard
+                    if result:
+                        error_msg = """409 Conflict! Flashcard already exists! 
+                        Use update button!!!"""
 
-                set_id = set_data.fetchone()
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=409))
+                    
+                    # To run through the set id based on the set_title
+                    set_data = main_cursor.execute(
+                        "SELECT id FROM card_list WHERE card_title = ?", 
+                        (user_set,)
+                    )
 
-                # Insert the new flashcard into that specific set
-                main_cursor.execute(
-                """INSERT INTO flashcard (user_id, card_set, term, definition) 
-                VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
-                                        new_term, new_definition)
-                )
+                    set_id = set_data.fetchone()
 
-                db.commit()
-                db.close()
+                    # Insert the new flashcard into that specific set
+                    main_cursor.execute(
+                    """INSERT INTO flashcard (user_id, card_set, term, definition) 
+                    VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
+                                            new_term, new_definition)
+                    )
 
-                return redirect("/flashcard")       
+                    db.commit()
+                    db.close()
+
+                    return redirect("/flashcard")     
+
+                if 'replace_term' in request.form:
+                    # Retrieve form information and prevents any blanks
+                    replace_term = request.form.get("replace_term")
+                    replace_def = request.form.get("replace_def")
+                    old_term = request.form.get("old_term")
+                    old_def = request.form.get("old_def")
+
+                    if (not replace_term or not replace_def or not old_term
+                        or not old_def):
+                        error_msg = "404 INPUTS SHOULD NEVER BE EMPTY >:C"
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+                    
+                    # Searches through the flashcards to see if term does not
+                    # already exist
+                    verify_term = main_cursor.execute(
+                    """SELECT * FROM flashcard WHERE term = ? 
+                    AND user_id = ? AND card_set = ?""",
+                    (old_term, session["id"], int(set_id["id"]))
+                    )
+
+                    result = verify_term.fetchone()
+
+                    # To instruct the user on how to properly create a flashcard
+                    if not result:
+                        error_msg = "404: flashcard doesn't exist bruh..."
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    main_cursor.execute("""UPDATE flashcard SET 
+                                        term = ?, definition = ?
+                                        WHERE card_set = ? AND user_id = ?
+                                        AND term = ? AND definition = ?""",
+                                        (replace_term, replace_def, set_id["id"]
+                                        , session["id"], old_term, old_def)
+                                        )
+
+                    db.commit()
+                    db.close()
+
+                    return redirect("/flashcard")
+
+                if 'del_flashcard' in request.form:
+                    term_request = request.form.get("del_flashcard")
+
+                    # To instruct the user on how to properly create a flashcard
+                    if not term_request:
+                        error_msg = "404: BLANK INPUTS!!! >:CCCCC"
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    verify_term = main_cursor.execute(
+                    """SELECT * FROM flashcard WHERE term = ? 
+                    AND user_id = ? AND card_set = ?""",
+                    (term_request, session["id"], int(set_id["id"]))
+                    )
+
+                    result = verify_term.fetchone()
+
+                    # To instruct the user on how to properly create a flashcard
+                    if not result:
+                        error_msg = "404: flashcard doesn't exist bruh..."
+
+                        return redirect(url_for("error", 
+                                                message=error_msg, code=404))
+
+                    main_cursor.execute("""DELETE FROM flashcard 
+                                        WHERE term = ? AND card_set = ? AND
+                                        user_id = ?
+                                        """, (term_request, int(set_id["id"]),
+                                               session["id"])
+                                        )
+
+                    db.commit()
+                    db.close()
+
+                    return redirect("/flashcard")
+
+                if 'random_sort' in request.form:
+                    session["sort_cards"] = True
+
+                    return redirect("/flashcard")
 
             return render_template("flashcard.html", logged=user_logged,
                                     name=user_set, cards=cards_list,
