@@ -59,9 +59,6 @@ class MainApp(Flask):
     and access to multiple libraries to do password encryption and sessions.
     """
 
-    __db_connection = None
-    __db_cursor = None
-
     def __init__(self):
         """
         The constructor for the class will help initialize the Flask framework
@@ -73,9 +70,7 @@ class MainApp(Flask):
         super().__init__(__name__)
 
         # Store the name of the database for this application
-        if MainApp.__db_connection is None:
-            MainApp.__db_connection = get_db()
-            MainApp.__db_cursor = retrieve_cursor()
+        self.__DATABASE = "user_database.db"
 
         # Set up the session configuration for the user to stay logged in
         self.config["SESSION_PERMANENT"] = False
@@ -124,7 +119,7 @@ class MainApp(Flask):
             return redirect(url_for("error", message=error_msg, 
                                     code=error_code))
 
-        def __search_user(db_cursor, user_name):
+        def __search_user(db_cursor, user_name, need_id):
             """
             The __search_users() method enters into the SQLite database
             to retrieve all the users that is currently stored in the database
@@ -132,8 +127,6 @@ class MainApp(Flask):
             Useful for verifying information when registering or logging into
             accounts.
             """
-
-            data_found = False
 
             # Searches through database to find the user
             search_user = db_cursor.execute(
@@ -144,10 +137,33 @@ class MainApp(Flask):
             # return 
             result = search_user.fetchone()
 
-            if result:
-                data_found = True
+            # Saves user's id when needed to search in sets if need_id is True
+            if need_id:
+                return result["user_id"]
 
-            return data_found
+            return True if result else False
+
+        def __search_sets(db_cursor, set_name):
+            # To search in the collection of sets if name already
+            # taken
+            set_data = db_cursor.execute(
+                """SELECT * FROM card_list WHERE card_title = ? 
+                AND user_id = ?""", (set_name, session["user_id"])
+            )
+                    
+            verify = set_data.fetchone()
+
+            return True if verify else False
+
+        def __find_hash(db_cursor, username):
+
+            hash_data = db_cursor.execute("""
+                SELECT hash FROM user_info WHERE user_name = ?
+            """, (username, ))
+
+            hash_result = hash_data.fetchone()
+
+            return hash_result
 
         @self.route("/", methods=["GET", "POST"])
         def register():
@@ -185,31 +201,32 @@ class MainApp(Flask):
                 
                 # Starts a database to query information
                 db = get_db(self.__DATABASE)
-                main_cursor = retrieve_cursor(db)
+                db_cursor = retrieve_cursor(db)
 
                 # To give an error to the user when a username already taken
-                if __search_user(main_cursor, username):
+                if __search_user(db_cursor, username, False):
                     return __send_error(409)
 
                 # Encrypts the password for security when entering into 
                 # database
                 pass_bytes = password.encode("utf-8")
-                salt_key = bcrypt.gensalt()
-                hash_key = bcrypt.hashpw(pass_bytes, salt_key)
+                salt = bcrypt.gensalt()
+                hash = bcrypt.hashpw(pass_bytes, salt)
 
                 # To commit all user information into the database to make
                 # them officially into the site
-                main_cursor.execute(
+                db_cursor.execute(
                     "INSERT INTO user_info (user_name, hash) VALUES (?, ?)", 
-                    (username, hash_key)
-                    )
-
-                db.commit()
-                db.close()
+                    (username, hash)
+                )
 
                 # Allows the user to sign back in when they leave the site
                 session["user"] = username
                 session["sort_cards"] = False
+                session["user_id"] = __search_user(db_cursor, username, True)
+
+                db.commit()
+                db.close()
 
                 return redirect("/sets")
 
@@ -244,18 +261,16 @@ class MainApp(Flask):
 
                 # Starts the database connection to make queries
                 db = get_db(self.__DATABASE)
-                main_cursor = retrieve_cursor(db)
-
-                found_user = __find_user(user)
+                db_cursor = retrieve_cursor(db)
 
                 # To encourage user to register an account
-                if not found_user:
+                if not __search_user(db_cursor, user, False):
                     return __send_error(404)
 
                 # To compare the password from the database and the user's
                 # input to determine validity
                 encode_pass = password.encode("utf-8")
-                pass_hash = found_user["hash"]
+                pass_hash = __find_hash(db_cursor, user)["hash"]
                 result = bcrypt.checkpw(encode_pass, pass_hash)
 
                 # To prevent user from entering into the account using
@@ -266,6 +281,7 @@ class MainApp(Flask):
                 # Logs session to the user to confirm everything works
                 session["user"] = user
                 session["sort_cards"] = False
+                session["user_id"] = __search_user(db_cursor, user, True)
 
                 db.commit()
                 db.close()
@@ -322,24 +338,15 @@ class MainApp(Flask):
 
             # To retrieve the database to search up and make query commits
             db = get_db(self.__DATABASE)
-            main_cursor = retrieve_cursor(db)
-
-            # To find the user's id based on their session username to make
-            # changes to the database information
-            id_info = main_cursor.execute(
-                "SELECT user_id FROM user_info WHERE user_name = ?", 
-                    (session["user"],)
-            )
-
-            user_id = id_info.fetchone()
+            db_cursor = retrieve_cursor(db)
 
             # To run through all sets that the user contained in the database
-            set_title = main_cursor.execute(
+            set_data = db_cursor.execute(
                 "SELECT card_title FROM card_list WHERE user_id = ?", 
-                (user_id["user_id"],)
+                (session["user_id"],)
             )
 
-            sets_names = set_title.fetchall()
+            all_sets = set_data.fetchall()
 
             # To see if any forms were submitted by the HTML page
             if request.method == "POST":
@@ -347,32 +354,22 @@ class MainApp(Flask):
                 # To add set name into the user's database 
                 if 'create' in request.form:
 
-                    card_title = request.form.get("create")
+                    new_set = request.form.get("create")
 
                     # To verify if the set title is not in the database
-                    if not card_title:
+                    if not new_set:
                         return __send_error(404)
-
-                    # To search in the collection of sets if name already
-                    # taken
-                    set_data = main_cursor.execute(
-                        """SELECT * FROM card_list WHERE card_title = ? 
-                        AND user_id = ?""", 
-                        (card_title, user_id["user_id"])
-                    )
-
-                    card_names = set_data.fetchone()
 
                     # Warns user that the set already exist and can modify
                     # that set
-                    if card_names:
+                    if __search_sets(db_cursor, new_set):
                         return __send_error(409)
 
                     # To add the new set name into the user's database
-                    main_cursor.execute(
+                    db_cursor.execute(
                         """INSERT INTO card_list (user_id, card_title) 
                         VALUES (?, ?)""", 
-                        (user_id["user_id"], card_title)
+                        (session["user_id"], new_set)
                     )
 
                     db.commit()
@@ -390,23 +387,17 @@ class MainApp(Flask):
                     # Warn user of trying to enter blank inputs
                     if not new_name or not old_name:
                         return __send_error(404)
-                    
-                    # To check if the set already exists in the user's database
-                    list_of_sets = []   
-                    for v in sets_names:
-                        list_of_sets.append(v["card_title"])
-
 
                     # Warns user of trying to change name of an invalid set
-                    if old_name not in list_of_sets:
+                    if not __search_sets(db_cursor, old_name):
                         return __send_error(404)
 
                     # To permanently change the old set title with new set
                     # title 
-                    main_cursor.execute(
+                    db_cursor.execute(
                         """UPDATE card_list SET card_title = ?
                         WHERE user_id = ? AND card_title = ?""", 
-                        (new_name, user_id["user_id"], old_name)
+                        (new_name, session["user_id"], old_name)
                     )
 
                     db.commit()
@@ -421,38 +412,32 @@ class MainApp(Flask):
                     if not user_request:
                         return __send_error(404)
 
-                    # To check if the set already exists in the user's database
-                    list_of_sets = []   
-                    for v in sets_names:
-                        list_of_sets.append(v["card_title"])
-
-
-                    # Warns user of trying to change name of an invalid set
-                    if user_request not in list_of_sets:
-                        return __send_error(404)
-
                     # To run through all sets that the user 
                     # contained in the database
-                    set_id = main_cursor.execute(
+                    set_data = db_cursor.execute(
                         """SELECT id FROM card_list WHERE user_id = ? AND
                         card_title = ?""", 
-                        (user_id["user_id"], user_request)
+                        (session["user_id"], user_request)
                     )
 
-                    result_id = set_id.fetchone()
+                    found_set = set_data.fetchone()
+
+                    # Warns user of trying to change name of an invalid set
+                    if not found_set:
+                        return __send_error(404)
 
                     # To permanently change the old set title with new set
                     # title 
-                    main_cursor.execute(
+                    db_cursor.execute(
                         """DELETE FROM flashcard WHERE card_set = ? AND
                         user_id = ?""", 
-                        (result_id["id"], user_id["user_id"])
+                        (found_set["id"], session["user_id"])
                     )
 
-                    main_cursor.execute(
+                    db_cursor.execute(
                         """DELETE FROM card_list WHERE id = ? AND
                         user_id = ?""", 
-                        (result_id["id"], user_id["user_id"])
+                        (found_set["id"], session["user_id"])
                     )
 
                     db.commit()
@@ -467,12 +452,11 @@ class MainApp(Flask):
                     # run the flashcards
                     chosen_card = request.form.get("display_set")
                     session["set"] = chosen_card
-                    session["id"] = user_id["user_id"]
 
                     return redirect("/flashcard")
 
             return render_template("index.html", logged=user_logged,
-                                    name=session["user"], flashcards=sets_names) 
+                                    name=session["user"], sets=all_sets) 
         
         @self.route("/flashcard", methods=["GET", "POST"])
         def flashcard():
@@ -493,7 +477,6 @@ class MainApp(Flask):
             # Sets the title and shows specific navigation bars buttons when
             # logged in
             user_logged = 'user' in session
-            user_set = session["set"]  
 
             # Prevent the user from trying to access sets after not signed in
             if not user_logged:
@@ -504,14 +487,15 @@ class MainApp(Flask):
             db = get_db(self.__DATABASE)
             main_cursor = retrieve_cursor(db)
 
-            # To look for the specific set id to modify when adding flashcards
-            set_data = main_cursor.execute(
-                "SELECT id FROM card_list WHERE card_title = ?", (user_set,)
-            )
+            # # To look for the specific set id to modify when adding flashcards
+            # set_id = main_cursor.execute(
+            #     "SELECT id FROM card_list WHERE card_title = ?", 
+            #     (session["set"],)
+            # )
 
-            set_id = set_data.fetchone()
+            # set_id = set_data.fetchone()
 
-            print(session["sort_cards"])
+            # print(session["sort_cards"])
 
             if not session["sort_cards"]:
                 # To run through all the terms and definitions in a graph
@@ -654,7 +638,7 @@ class MainApp(Flask):
                     return redirect("/flashcard")
 
             return render_template("flashcard.html", logged=user_logged,
-                                    name=user_set, cards=cards_list,
+                                    name=session["set"], cards=cards_list,
                                     empty_list=implement_dummy)
 
 # Runs the server necessary to start using the web application (for now)
