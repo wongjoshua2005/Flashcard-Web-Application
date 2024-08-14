@@ -59,6 +59,9 @@ class MainApp(Flask):
     and access to multiple libraries to do password encryption and sessions.
     """
 
+    __db_connection = None
+    __db_cursor = None
+
     def __init__(self):
         """
         The constructor for the class will help initialize the Flask framework
@@ -70,7 +73,9 @@ class MainApp(Flask):
         super().__init__(__name__)
 
         # Store the name of the database for this application
-        self.__DATABASE = "user_database.db"
+        if MainApp.__db_connection is None:
+            MainApp.__db_connection = get_db()
+            MainApp.__db_cursor = retrieve_cursor()
 
         # Set up the session configuration for the user to stay logged in
         self.config["SESSION_PERMANENT"] = False
@@ -119,6 +124,31 @@ class MainApp(Flask):
             return redirect(url_for("error", message=error_msg, 
                                     code=error_code))
 
+        def __search_user(db_cursor, user_name):
+            """
+            The __search_users() method enters into the SQLite database
+            to retrieve all the users that is currently stored in the database
+            to find a specific username.
+            Useful for verifying information when registering or logging into
+            accounts.
+            """
+
+            data_found = False
+
+            # Searches through database to find the user
+            search_user = db_cursor.execute(
+                "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
+            )
+
+            # Stores the result of the search into the result variable to
+            # return 
+            result = search_user.fetchone()
+
+            if result:
+                data_found = True
+
+            return data_found
+
         @self.route("/", methods=["GET", "POST"])
         def register():
             """
@@ -143,13 +173,13 @@ class MainApp(Flask):
             if request.method == "POST":
 
                 # To retrieve all user's information to verify for validity
-                user_name = request.form.get("username")
+                username = request.form.get("username")
                 password = request.form.get("password")
                 confirm_pass = request.form.get("confirm_pass")
 
                 # To prevent the user from trying to enter blank inputs
                 # and ensure password matches the confirmed password
-                if (not user_name or not password 
+                if (not username or not password 
                     or not confirm_pass or password != confirm_pass):
                     return __send_error(404)
                 
@@ -157,16 +187,8 @@ class MainApp(Flask):
                 db = get_db(self.__DATABASE)
                 main_cursor = retrieve_cursor(db)
 
-                # To ensure that the user's input does not exist in the
-                # database already
-                users_data = main_cursor.execute(
-                    "SELECT * FROM user_info WHERE user_name = ?", (user_name,)
-                )
-
-                user = users_data.fetchone()
-
                 # To give an error to the user when a username already taken
-                if user:
+                if __search_user(main_cursor, username):
                     return __send_error(409)
 
                 # Encrypts the password for security when entering into 
@@ -179,14 +201,14 @@ class MainApp(Flask):
                 # them officially into the site
                 main_cursor.execute(
                     "INSERT INTO user_info (user_name, hash) VALUES (?, ?)", 
-                    (user_name, hash_key)
+                    (username, hash_key)
                     )
 
                 db.commit()
                 db.close()
 
                 # Allows the user to sign back in when they leave the site
-                session["user"] = user_name
+                session["user"] = username
                 session["sort_cards"] = False
 
                 return redirect("/sets")
@@ -224,21 +246,16 @@ class MainApp(Flask):
                 db = get_db(self.__DATABASE)
                 main_cursor = retrieve_cursor(db)
 
-                # To ensure the username is in the database
-                user_name = main_cursor.execute(
-                    "SELECT * FROM user_info WHERE user_name = ?", (user,)
-                )
-
-                verify_user = user_name.fetchone()
+                found_user = __find_user(user)
 
                 # To encourage user to register an account
-                if not verify_user:
+                if not found_user:
                     return __send_error(404)
 
                 # To compare the password from the database and the user's
                 # input to determine validity
                 encode_pass = password.encode("utf-8")
-                pass_hash = verify_user["hash"]
+                pass_hash = found_user["hash"]
                 result = bcrypt.checkpw(encode_pass, pass_hash)
 
                 # To prevent user from entering into the account using
