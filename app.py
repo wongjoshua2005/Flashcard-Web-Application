@@ -147,13 +147,24 @@ class MainApp(Flask):
             # To search in the collection of sets if name already
             # taken
             set_data = db_cursor.execute(
-                """SELECT * FROM card_list WHERE card_title = ? 
+                """SELECT * FROM collection WHERE set_title = ? 
                 AND user_id = ?""", (set_name, session["user_id"])
             )
                     
             verify = set_data.fetchone()
 
             return True if verify else False
+
+        def __search_flashcard(db_cursor, card_name):
+            verify_term = db_cursor.execute(
+                """SELECT * FROM flashcard WHERE term = ? 
+                AND user_id = ? AND set_name = ?""",
+                (card_name, session["user_id"], session["set"])
+            )
+
+            card_result = verify_term.fetchone()
+
+            return True if card_result else False
 
         def __find_hash(db_cursor, username):
 
@@ -342,7 +353,7 @@ class MainApp(Flask):
 
             # To run through all sets that the user contained in the database
             set_data = db_cursor.execute(
-                "SELECT card_title FROM card_list WHERE user_id = ?", 
+                "SELECT set_title FROM collection WHERE user_id = ?", 
                 (session["user_id"],)
             )
 
@@ -367,7 +378,7 @@ class MainApp(Flask):
 
                     # To add the new set name into the user's database
                     db_cursor.execute(
-                        """INSERT INTO card_list (user_id, card_title) 
+                        """INSERT INTO collection (user_id, set_title) 
                         VALUES (?, ?)""", 
                         (session["user_id"], new_set)
                     )
@@ -395,8 +406,8 @@ class MainApp(Flask):
                     # To permanently change the old set title with new set
                     # title 
                     db_cursor.execute(
-                        """UPDATE card_list SET card_title = ?
-                        WHERE user_id = ? AND card_title = ?""", 
+                        """UPDATE collection SET set_title = ?
+                        WHERE user_id = ? AND set_title = ?""", 
                         (new_name, session["user_id"], old_name)
                     )
 
@@ -412,32 +423,22 @@ class MainApp(Flask):
                     if not user_request:
                         return __send_error(404)
 
-                    # To run through all sets that the user 
-                    # contained in the database
-                    set_data = db_cursor.execute(
-                        """SELECT id FROM card_list WHERE user_id = ? AND
-                        card_title = ?""", 
-                        (session["user_id"], user_request)
-                    )
-
-                    found_set = set_data.fetchone()
-
                     # Warns user of trying to change name of an invalid set
-                    if not found_set:
+                    if not __search_sets(db_cursor, user_request):
                         return __send_error(404)
 
                     # To permanently change the old set title with new set
                     # title 
                     db_cursor.execute(
-                        """DELETE FROM flashcard WHERE card_set = ? AND
+                        """DELETE FROM flashcard WHERE set_name = ? AND
                         user_id = ?""", 
-                        (found_set["id"], session["user_id"])
+                        (user_request, session["user_id"])
                     )
 
                     db_cursor.execute(
-                        """DELETE FROM card_list WHERE id = ? AND
+                        """DELETE FROM collection WHERE set_title = ? AND
                         user_id = ?""", 
-                        (found_set["id"], session["user_id"])
+                        (user_request, session["user_id"])
                     )
 
                     db.commit()
@@ -485,30 +486,20 @@ class MainApp(Flask):
 
             # Creates the database connection to make query commits
             db = get_db(self.__DATABASE)
-            main_cursor = retrieve_cursor(db)
-
-            # # To look for the specific set id to modify when adding flashcards
-            # set_id = main_cursor.execute(
-            #     "SELECT id FROM card_list WHERE card_title = ?", 
-            #     (session["set"],)
-            # )
-
-            # set_id = set_data.fetchone()
-
-            # print(session["sort_cards"])
+            db_cursor = retrieve_cursor(db)
 
             if not session["sort_cards"]:
                 # To run through all the terms and definitions in a graph
                 # for the user to see how many is in their set
-                flashcards = main_cursor.execute(
-                    "SELECT term, definition FROM flashcard WHERE card_set = ?",
-                    (set_id["id"],)
+                flashcards = db_cursor.execute(
+                    "SELECT term, definition FROM flashcard WHERE set_name = ?",
+                    (session["set"],)
                 )
             else:
-                flashcards = main_cursor.execute(
+                flashcards = db_cursor.execute(
                     """SELECT term, definition FROM flashcard 
-                    WHERE card_set = ? ORDER BY RANDOM()""",
-                    (set_id["id"],) )
+                    WHERE set_name = ? ORDER BY RANDOM()""",
+                    (session["set"],) )
                 
                 session["sort_cards"] = False
 
@@ -521,40 +512,23 @@ class MainApp(Flask):
             # To allow the user to make a new flashcard
             if request.method == "POST":
 
-                if 'term' in request.form:
+                if 'create_term' in request.form:
                     # Retrieve form information and prevents any blanks
-                    new_term = request.form.get("term")
-                    new_definition = request.form.get("definition")
+                    new_term = request.form.get("create_term")
+                    new_definition = request.form.get("create_def")
 
                     if not new_term or not new_definition:
                         return __send_error(404)
-                    
-                    # Searches through the flashcards to see if term does not
-                    # already exist
-                    verify_term = main_cursor.execute(
-                    """SELECT * FROM flashcard WHERE term = ? 
-                    AND user_id = ? AND card_set = ?""",
-                    (new_term, session["id"], int(set_id["id"]))
-                    )
-
-                    result = verify_term.fetchone()
 
                     # To instruct the user on how to properly create a flashcard
-                    if result:
+                    if __search_flashcard(db_cursor, new_term):
                         return __send_error(409)
-                    
-                    # To run through the set id based on the set_title
-                    set_data = main_cursor.execute(
-                        "SELECT id FROM card_list WHERE card_title = ?", 
-                        (user_set,)
-                    )
-
-                    set_id = set_data.fetchone()
 
                     # Insert the new flashcard into that specific set
-                    main_cursor.execute(
-                    """INSERT INTO flashcard (user_id, card_set, term, definition) 
-                    VALUES (?, ?, ?, ?);""", (session["id"], set_id["id"],
+                    db_cursor.execute(
+                    """INSERT INTO flashcard (user_id, set_name, term, definition) 
+                    VALUES (?, ?, ?, ?);""", (session["user_id"], 
+                                              session["set"],
                                             new_term, new_definition)
                     )
 
@@ -573,27 +547,18 @@ class MainApp(Flask):
                     if (not replace_term or not replace_def or not old_term
                         or not old_def):
                         return __send_error(404)
-                    
-                    # Searches through the flashcards to see if term does not
-                    # already exist
-                    verify_term = main_cursor.execute(
-                    """SELECT * FROM flashcard WHERE term = ? 
-                    AND user_id = ? AND card_set = ?""",
-                    (old_term, session["id"], int(set_id["id"]))
-                    )
-
-                    result = verify_term.fetchone()
 
                     # To instruct the user on how to properly create a flashcard
-                    if not result:
+                    if not __search_flashcard(db_cursor, old_term):
                         return __send_error(404)
 
-                    main_cursor.execute("""UPDATE flashcard SET 
+                    db_cursor.execute("""UPDATE flashcard SET 
                                         term = ?, definition = ?
-                                        WHERE card_set = ? AND user_id = ?
+                                        WHERE set_name = ? AND user_id = ?
                                         AND term = ? AND definition = ?""",
-                                        (replace_term, replace_def, set_id["id"]
-                                        , session["id"], old_term, old_def)
+                                        (replace_term, replace_def, 
+                                         session["set"], 
+                                         session["user_id"], old_term, old_def)
                                         )
 
                     db.commit()
@@ -608,23 +573,15 @@ class MainApp(Flask):
                     if not term_request:
                         return __send_error(404)
 
-                    verify_term = main_cursor.execute(
-                    """SELECT * FROM flashcard WHERE term = ? 
-                    AND user_id = ? AND card_set = ?""",
-                    (term_request, session["id"], int(set_id["id"]))
-                    )
-
-                    result = verify_term.fetchone()
-
                     # To instruct the user on how to properly create a flashcard
-                    if not result:
+                    if not __search_flashcard(db_cursor, term_request):
                         return __send_error(404)
 
-                    main_cursor.execute("""DELETE FROM flashcard 
-                                        WHERE term = ? AND card_set = ? AND
+                    db_cursor.execute("""DELETE FROM flashcard 
+                                        WHERE term = ? AND set_name = ? AND
                                         user_id = ?
-                                        """, (term_request, int(set_id["id"]),
-                                               session["id"])
+                                        """, (term_request, session["set"],
+                                               session["user_id"])
                                         )
 
                     db.commit()

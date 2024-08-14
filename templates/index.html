@@ -196,7 +196,7 @@ justify-content-center flex-wrap">
           <!-- Display card title -->
           <h3 style="padding: 20px;" name="card" 
           class="card-title">
-            {{ card.card_title }}
+            {{ card.set_title }}
           </h3>
 
           <!--
@@ -204,7 +204,7 @@ justify-content-center flex-wrap">
            method when entering the set 
           -->
           <input type="hidden" name="display_set" 
-          value="{{ card.card_title }}">
+          value="{{ card.set_title }}">
 
           <!-- Sends information retrieved from this from to Flask method -->
           <button type="submit" value="use_card" 
