@@ -80,11 +80,13 @@ class MainApp(Flask):
         # Runs all routes necessary for interacting with the website
         self.__routes()
 
-    def __routes(self):
+    def __send_routes(self):
         """
-        The __routes() method runs inside the constructor used for starting
+        The __send_routes() method runs inside the constructor used for starting
         the application. The method allows all routes to be registered and 
-        running for interactivity with the HTML forms.
+        running for interactivity with the HTML forms. In addition, the 
+        __send_routes() method will allow adding properties to databases and
+        giving errors.
         """
 
         @self.route("/", methods=["GET", "POST"])
@@ -115,21 +117,11 @@ class MainApp(Flask):
                 password = request.form.get("password")
                 confirm_pass = request.form.get("confirm_pass")
 
-                # To prevent the user from trying to enter nothing
-                # and one SQL injection attack prevention
-                if not user_name or not password or not confirm_pass:
-                    error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
-
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=404))
-
-                # To verify if the password is what they want because
-                # the password cannot be changed
-                if password != confirm_pass:
-                    error_msg = "404...Invalid Password Verification!!! :C"
-
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=404))
+                # To prevent the user from trying to enter blank inputs
+                # and ensure password matches the confirmed password
+                if (not user_name or not password 
+                    or not confirm_pass or password != confirm_pass):
+                    self.__send_error(404)
                 
                 # Starts a database to query information
                 db = get_db(self.__DATABASE)
