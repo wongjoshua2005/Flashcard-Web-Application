@@ -78,16 +78,46 @@ class MainApp(Flask):
         Session(self)
 
         # Runs all routes necessary for interacting with the website
-        self.__routes()
+        self.__run_routes()
 
-    def __send_routes(self):
+    def __run_routes(self):
         """
-        The __send_routes() method runs inside the constructor used for starting
+        The __run_routes() method runs inside the constructor used for starting
         the application. The method allows all routes to be registered and 
         running for interactivity with the HTML forms. In addition, the 
-        __send_routes() method will allow adding properties to databases and
-        giving errors.
+        method will allow adding properties to databases and giving errors.
         """
+
+        def __send_error(error_code):
+            """
+            The __send_error() method reduces the amount of code required
+            to send an error message to the error route and saves code lines.
+            In addition, the method improves readability and does not need
+            to write the messages themselves.
+
+            Args:
+                error_code: The code you want to display to the user when
+                entering into the error page.
+            Returns:
+                Error route: Redirects the user to the error page for making
+                a mistake in their inputs.
+            """
+
+            error_msg = None
+
+            # Sets a pre-defined message to display to the user when reaches
+            # error page
+            match error_code:
+                case 404:
+                    error_msg = "404: INVALID INPUT(S)!!! :/"
+                case 401:
+                    error_msg = "401: INVALID GIVEN INPUT! CHECK AGAIN! ;-;"
+                case 409:
+                    error_msg = """409: CONFLICT WITH GIVEN 
+                    INPUT! CHECK AGAIN! ;-;"""
+
+            return redirect(url_for("error", message=error_msg, 
+                                    code=error_code))
 
         @self.route("/", methods=["GET", "POST"])
         def register():
@@ -121,7 +151,7 @@ class MainApp(Flask):
                 # and ensure password matches the confirmed password
                 if (not user_name or not password 
                     or not confirm_pass or password != confirm_pass):
-                    self.__send_error(404)
+                    return __send_error(404)
                 
                 # Starts a database to query information
                 db = get_db(self.__DATABASE)
@@ -137,9 +167,7 @@ class MainApp(Flask):
 
                 # To give an error to the user when a username already taken
                 if user:
-                    error_msg = "409 Conflict! Username is already taken!!! >:C"
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=409))
+                    return __send_error(409)
 
                 # Encrypts the password for security when entering into 
                 # database
@@ -190,9 +218,7 @@ class MainApp(Flask):
 
                 # To prevent SQL injection attack and no data
                 if not user or not password:
-                    error_msg = "404...INVALID USERNAME OR PASSWORD >:C"
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=404))
+                    return __send_error(404)
 
                 # Starts the database connection to make queries
                 db = get_db(self.__DATABASE)
@@ -207,11 +233,7 @@ class MainApp(Flask):
 
                 # To encourage user to register an account
                 if not verify_user:
-                    error_msg = """404...Username doesn't exist in the database 
-                    :CCCC"""
-
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=404))
+                    return __send_error(404)
 
                 # To compare the password from the database and the user's
                 # input to determine validity
@@ -222,10 +244,7 @@ class MainApp(Flask):
                 # To prevent user from entering into the account using
                 # wrong password
                 if not result:
-                    error_msg = "401...Invalid password!!!"
-
-                    return redirect(url_for("error", 
-                                            message=error_msg, code=401))
+                    return __send_error(401)
 
                 # Logs session to the user to confirm everything works
                 session["user"] = user
@@ -315,9 +334,7 @@ class MainApp(Flask):
 
                     # To verify if the set title is not in the database
                     if not card_title:
-                        error_msg = "404 CARD TITLE SHOULD NEVER BE EMPTY >:C"
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     # To search in the collection of sets if name already
                     # taken
@@ -332,11 +349,7 @@ class MainApp(Flask):
                     # Warns user that the set already exist and can modify
                     # that set
                     if card_names:
-                        error_msg = """409 Card already exists in your set. 
-                        Go back!"""
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=409))
+                        return __send_error(409)
 
                     # To add the new set name into the user's database
                     main_cursor.execute(
@@ -359,10 +372,7 @@ class MainApp(Flask):
 
                     # Warn user of trying to enter blank inputs
                     if not new_name or not old_name:
-                        error_msg = "404 BLANK INPUTS!!! >:CCCCC"
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))   
+                        return __send_error(404)
                     
                     # To check if the set already exists in the user's database
                     list_of_sets = []   
@@ -372,10 +382,7 @@ class MainApp(Flask):
 
                     # Warns user of trying to change name of an invalid set
                     if old_name not in list_of_sets:
-                        error_msg = "404! Set does not exist :C *cry* *cry*"
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     # To permanently change the old set title with new set
                     # title 
@@ -395,10 +402,7 @@ class MainApp(Flask):
 
                     # Warn user of trying to enter blank inputs
                     if not user_request:
-                        error_msg = "404 BLANK INPUTS!!! >:CCCCC"
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     # To check if the set already exists in the user's database
                     list_of_sets = []   
@@ -408,12 +412,10 @@ class MainApp(Flask):
 
                     # Warns user of trying to change name of an invalid set
                     if user_request not in list_of_sets:
-                        error_msg = "404! Set does not exist :C *cry* *cry*"
+                        return __send_error(404)
 
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
-
-                    # To run through all sets that the user contained in the database
+                    # To run through all sets that the user 
+                    # contained in the database
                     set_id = main_cursor.execute(
                         """SELECT id FROM card_list WHERE user_id = ? AND
                         card_title = ?""", 
@@ -524,9 +526,7 @@ class MainApp(Flask):
                     new_definition = request.form.get("definition")
 
                     if not new_term or not new_definition:
-                        error_msg = "404 FLASHCARD SHOULD NEVER BE EMPTY >:C"
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
                     
                     # Searches through the flashcards to see if term does not
                     # already exist
@@ -540,11 +540,7 @@ class MainApp(Flask):
 
                     # To instruct the user on how to properly create a flashcard
                     if result:
-                        error_msg = """409 Conflict! Flashcard already exists! 
-                        Use update button!!!"""
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=409))
+                        return __send_error(409)
                     
                     # To run through the set id based on the set_title
                     set_data = main_cursor.execute(
@@ -575,9 +571,7 @@ class MainApp(Flask):
 
                     if (not replace_term or not replace_def or not old_term
                         or not old_def):
-                        error_msg = "404 INPUTS SHOULD NEVER BE EMPTY >:C"
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
                     
                     # Searches through the flashcards to see if term does not
                     # already exist
@@ -591,10 +585,7 @@ class MainApp(Flask):
 
                     # To instruct the user on how to properly create a flashcard
                     if not result:
-                        error_msg = "404: flashcard doesn't exist bruh..."
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     main_cursor.execute("""UPDATE flashcard SET 
                                         term = ?, definition = ?
@@ -614,10 +605,7 @@ class MainApp(Flask):
 
                     # To instruct the user on how to properly create a flashcard
                     if not term_request:
-                        error_msg = "404: BLANK INPUTS!!! >:CCCCC"
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     verify_term = main_cursor.execute(
                     """SELECT * FROM flashcard WHERE term = ? 
@@ -629,10 +617,7 @@ class MainApp(Flask):
 
                     # To instruct the user on how to properly create a flashcard
                     if not result:
-                        error_msg = "404: flashcard doesn't exist bruh..."
-
-                        return redirect(url_for("error", 
-                                                message=error_msg, code=404))
+                        return __send_error(404)
 
                     main_cursor.execute("""DELETE FROM flashcard 
                                         WHERE term = ? AND card_set = ? AND
