@@ -119,13 +119,23 @@ class MainApp(Flask):
             return redirect(url_for("error", message=error_msg, 
                                     code=error_code))
 
-        def __search_user(db_cursor, user_name, need_id):
+        def __search_user(db_cursor, user_name, set_session_id):
             """
             The __search_users() method enters into the SQLite database
             to retrieve all the users that is currently stored in the database
             to find a specific username.
             Useful for verifying information when registering or logging into
             accounts.
+
+            Args:
+                db_cursor: The cursor that is connected to the database
+                to make queries.
+                user_name (str): The user name to check in the database to 
+                ensure it exists.
+                set_session_id (bool): To determine if the user wants to 
+                set the session id to that user when entering into website.
+            Returns:
+                bool: Confirms if the user exists in the database.        
             """
 
             # Searches through database to find the user
@@ -138,14 +148,30 @@ class MainApp(Flask):
             result = search_user.fetchone()
 
             # Saves user's id when needed to search in sets if need_id is True
-            if need_id:
+            if set_session_id:
                 return result["user_id"]
 
             return True if result else False
 
-        def __search_sets(db_cursor, set_name):
-            # To search in the collection of sets if name already
-            # taken
+        def __search_set(db_cursor, set_name):
+            """
+            The __search_set() method enters into the SQLite database
+            to search for a specific set name for that specific user.
+            Just like the annoying to implement __search_user(), this does
+            exact same except has a different way to search. Why have separate
+            methods? I could do f-string, but I do not want to risk
+            getting an SQL injection attack.
+
+            Args:
+                db_cursor: The cursor that is connected to the database
+                to make queries.
+                set_name (str): The name of the set that the user wants to
+                verify exist in the database.
+            Returns:
+                bool: Confirms if the set exists in the database.        
+            """
+
+            # Retrieve the set data from the database
             set_data = db_cursor.execute(
                 """SELECT * FROM collection WHERE set_title = ? 
                 AND user_id = ?""", (set_name, session["user_id"])
@@ -156,6 +182,21 @@ class MainApp(Flask):
             return True if verify else False
 
         def __search_flashcard(db_cursor, card_name):
+            """
+            The __search_flashcard() method enters into the SQLite database
+            to search for a specific flashcard name for that specific user
+            within their set. Pretty self explanatory.
+
+            Args:
+                db_cursor: The cursor that is connected to the database
+                to make queries.
+                card_name (str): The name of the flashcard
+                  that the user wants to verify exist in their specific set.
+            Returns:
+                bool: Confirms the flashcard exists in the database or not.        
+            """
+
+            # Retrieve flashcard data from the specific set to verify existence
             verify_term = db_cursor.execute(
                 """SELECT * FROM flashcard WHERE term = ? 
                 AND user_id = ? AND set_name = ?""",
@@ -167,7 +208,21 @@ class MainApp(Flask):
             return True if card_result else False
 
         def __find_hash(db_cursor, username):
+            """
+            The __find_hash() method retrieves the hash necessary from the
+            specific user usually to verify if the password hashes match
+            to log the user into the site.
 
+            Args:
+                db_cursor: The cursor that is connected to the database
+                to make queries.
+                username (str): The user that wants to enter into the site.
+            Returns:
+                hash_result: The data necessary to use bcrypt's check hash
+                method.
+            """
+
+            # Searches for the hash information from specific user
             hash_data = db_cursor.execute("""
                 SELECT hash FROM user_info WHERE user_name = ?
             """, (username, ))
@@ -319,6 +374,7 @@ class MainApp(Flask):
                 network.
             """
 
+            # Retrieve the error message and the code given when redirected
             error_reason = request.args.get("message")
             code = request.args.get("code")
 
@@ -364,7 +420,6 @@ class MainApp(Flask):
 
                 # To add set name into the user's database 
                 if 'create' in request.form:
-
                     new_set = request.form.get("create")
 
                     # To verify if the set title is not in the database
@@ -373,7 +428,7 @@ class MainApp(Flask):
 
                     # Warns user that the set already exist and can modify
                     # that set
-                    if __search_sets(db_cursor, new_set):
+                    if __search_set(db_cursor, new_set):
                         return __send_error(409)
 
                     # To add the new set name into the user's database
@@ -400,7 +455,7 @@ class MainApp(Flask):
                         return __send_error(404)
 
                     # Warns user of trying to change name of an invalid set
-                    if not __search_sets(db_cursor, old_name):
+                    if not __search_set(db_cursor, old_name):
                         return __send_error(404)
 
                     # To permanently change the old set title with new set
@@ -416,6 +471,7 @@ class MainApp(Flask):
 
                     return redirect("/sets")
 
+                # To run operation to delete set based on request
                 if 'delete' in request.form:
                     user_request = request.form.get("delete")
 
@@ -424,11 +480,10 @@ class MainApp(Flask):
                         return __send_error(404)
 
                     # Warns user of trying to change name of an invalid set
-                    if not __search_sets(db_cursor, user_request):
+                    if not __search_set(db_cursor, user_request):
                         return __send_error(404)
 
-                    # To permanently change the old set title with new set
-                    # title 
+                    # To permanently delete the set from the database
                     db_cursor.execute(
                         """DELETE FROM flashcard WHERE set_name = ? AND
                         user_id = ?""", 
@@ -488,14 +543,20 @@ class MainApp(Flask):
             db = get_db(self.__DATABASE)
             db_cursor = retrieve_cursor(db)
 
+            # To display the cards on screen depending on randomly sorted button
+            # was pressed or not
             if not session["sort_cards"]:
+
                 # To run through all the terms and definitions in a graph
                 # for the user to see how many is in their set
                 flashcards = db_cursor.execute(
                     "SELECT term, definition FROM flashcard WHERE set_name = ?",
                     (session["set"],)
                 )
+
             else:
+
+                # Display flashcards in random order
                 flashcards = db_cursor.execute(
                     """SELECT term, definition FROM flashcard 
                     WHERE set_name = ? ORDER BY RANDOM()""",
@@ -512,7 +573,9 @@ class MainApp(Flask):
             # To allow the user to make a new flashcard
             if request.method == "POST":
 
+                # Allows user to create a new flashcard
                 if 'create_term' in request.form:
+
                     # Retrieve form information and prevents any blanks
                     new_term = request.form.get("create_term")
                     new_definition = request.form.get("create_def")
@@ -520,14 +583,14 @@ class MainApp(Flask):
                     if not new_term or not new_definition:
                         return __send_error(404)
 
-                    # To instruct the user on how to properly create a flashcard
+                    # Warns user if flashcard already in their set
                     if __search_flashcard(db_cursor, new_term):
                         return __send_error(409)
 
                     # Insert the new flashcard into that specific set
                     db_cursor.execute(
-                    """INSERT INTO flashcard (user_id, set_name, term, definition) 
-                    VALUES (?, ?, ?, ?);""", (session["user_id"], 
+                    """INSERT INTO flashcard (user_id, set_name, term, 
+                    definition) VALUES (?, ?, ?, ?);""", (session["user_id"], 
                                               session["set"],
                                             new_term, new_definition)
                     )
@@ -537,7 +600,10 @@ class MainApp(Flask):
 
                     return redirect("/flashcard")     
 
+                # Checks when the user wants to replace the term and definition
+                # of a specific flashcard
                 if 'replace_term' in request.form:
+
                     # Retrieve form information and prevents any blanks
                     replace_term = request.form.get("replace_term")
                     replace_def = request.form.get("replace_def")
@@ -548,10 +614,11 @@ class MainApp(Flask):
                         or not old_def):
                         return __send_error(404)
 
-                    # To instruct the user on how to properly create a flashcard
+                    # To verify if the old flashcard term exists in the database
                     if not __search_flashcard(db_cursor, old_term):
                         return __send_error(404)
 
+                    # Updates the term and definition of the original flashcard
                     db_cursor.execute("""UPDATE flashcard SET 
                                         term = ?, definition = ?
                                         WHERE set_name = ? AND user_id = ?
@@ -566,17 +633,20 @@ class MainApp(Flask):
 
                     return redirect("/flashcard")
 
+                # Allows user to delete the flashcard from their set
                 if 'del_flashcard' in request.form:
+
+                    # To prevent blanks from being entered as inputs
                     term_request = request.form.get("del_flashcard")
 
-                    # To instruct the user on how to properly create a flashcard
                     if not term_request:
                         return __send_error(404)
 
-                    # To instruct the user on how to properly create a flashcard
+                    # To ensure flashcard exists in the set to delete
                     if not __search_flashcard(db_cursor, term_request):
                         return __send_error(404)
 
+                    # Runs query to delete flashcard based on given name
                     db_cursor.execute("""DELETE FROM flashcard 
                                         WHERE term = ? AND set_name = ? AND
                                         user_id = ?
@@ -589,7 +659,11 @@ class MainApp(Flask):
 
                     return redirect("/flashcard")
 
+                # To check if the user wants their flashcards randomly sorted
                 if 'random_sort' in request.form:
+                    
+                    # To make the change when they load into the site and 
+                    # not be permanent
                     session["sort_cards"] = True
 
                     return redirect("/flashcard")
