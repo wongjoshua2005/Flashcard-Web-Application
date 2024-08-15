@@ -7,32 +7,38 @@
 <!-- To run the modal model for creating a new flashcard for the set -->
 <div class="d-flex justify-content-center gap-4">
 
+    <!-- Opens the create flashcard modal -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-    data-bs-target="#exampleModal1">
+    data-bs-target="#createCard">
         Create flashcard
     </button>
 
+    <!-- Opens the rename flashcard modal -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-    data-bs-target="#exampleModal2">
+    data-bs-target="#renameCard">
         Rename Flashcard
     </button>
 
+    <!-- Opens the delete flashcard modal -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-    data-bs-target="#exampleModal3">
+    data-bs-target="#deleteCard">
         Delete Flashcard
     </button>
 
+    <!-- Refresh the site with randomly sorted flashcards when pressed -->
     <form action="/flashcard" method="post">
+
       <input type="hidden" name="random_sort">
       <button type="submit" class="btn btn-primary" name="random_sort">
           Randomly Sort Flashcard
       </button>
+
     </form>
  </div>
 
 <!-- To display the necessary steps to creating a a valid flashcard -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal1" 
- tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="createCard" 
+ tabindex="-1" aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -41,7 +47,7 @@
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="createCard">
           Create a new flashcard
         </h1>
         <button type="button" class="btn-close" 
@@ -75,7 +81,9 @@
           the set in the database
            -->
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Make Card</button>
+            <button type="submit" class="btn btn-primary">
+              Make Flashcard
+            </button>
           </div>
 
         </form>
@@ -88,8 +96,8 @@
 </div>
 
 <!-- To display the necessary steps to creating a a valid flashcard -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal2" 
- tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="renameCard" 
+ tabindex="-1" aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -98,7 +106,7 @@
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="renameCard">
           Rename flashcard term and definition
         </h1>
         <button type="button" class="btn-close" 
@@ -147,7 +155,9 @@
           the set in the database
            -->
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Make Card</button>
+            <button type="submit" class="btn btn-primary">
+              Rename Flashcard
+            </button>
           </div>
 
         </form>
@@ -160,8 +170,8 @@
 </div>
 
 <!-- To display the necessary steps to creating a a valid flashcard -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal3" 
- tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="deleteCard" 
+ tabindex="-1" aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -170,7 +180,7 @@
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="deleteCard">
           Delete a flashcard
         </h1>
         <button type="button" class="btn-close" 
@@ -199,7 +209,9 @@
           the set in the database
            -->
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Make Card</button>
+            <button type="submit" class="btn btn-primary">
+              Delete Flashcard ;-;
+            </button>
           </div>
 
         </form>
@@ -245,8 +257,9 @@ slide" style="margin: 5%;">
         <div style="border: 1px solid;" 
         class="carousel-item {% if loop.first %}active{% endif %} text-center">
 
-            <p class="swap_card d-flex justify-content-center align-items-center"
-             style="width: auto; height: 500px; font-size: 3vw; overflow: hidden;">
+            <p class="swap_card d-flex justify-content-center 
+            align-items-center" style="width: auto; height: 500px; 
+            font-size: 3vw; overflow: hidden;">
                 {{ term_list.term }}
             </p>
 

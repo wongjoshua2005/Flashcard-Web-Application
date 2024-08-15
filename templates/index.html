@@ -7,26 +7,29 @@
 <!-- To run the modal model for creating a new set -->
 <div class="d-flex justify-content-center gap-4">
 
+  <!-- Opens the create set modal -->
   <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-  data-bs-target="#exampleModal">
+  data-bs-target="#createModal">
     Create Set
   </button>
 
+  <!-- Opens the rename set modal -->
   <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-  data-bs-target="#exampleModal2">
+  data-bs-target="#renameModal">
     Rename Set
   </button>
 
+  <!-- Opens the delete set modal -->
   <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-  data-bs-target="#exampleModal3">
+  data-bs-target="#deleteModal">
     Delete Set
   </button>
 
 </div>
 
 <!-- To display the modal box for to creating a set -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal" tabindex="-1" 
-aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="createModal" tabindex="-1" 
+ aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -35,7 +38,7 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="createModal">
           Create a new set! :D
         </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" 
@@ -72,8 +75,8 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
 </div>
 
 <!-- To display the modal box for renaming a set -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal2" tabindex="-1" 
-aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="renameModal" tabindex="-1" 
+ aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -82,7 +85,7 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="renameModal">
           Rename your set ;D
         </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" 
@@ -114,7 +117,7 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
 
           <!-- Runs Flask method that creates a new set in the database -->
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Make Set</button>
+            <button type="submit" class="btn btn-primary">Rename Set</button>
           </div>
 
         </form>
@@ -127,8 +130,8 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
 </div>
 
 <!-- To display the modal box for deleting a set -->
-<div data-bs-theme="dark" class="modal fade" id="exampleModal3" tabindex="-1" 
-aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div data-bs-theme="dark" class="modal fade" id="deleteModal" tabindex="-1" 
+aria-hidden="true">
 
   <!-- Necessary Bootstrap containers to create the visuals -->
   <div class="modal-dialog">
@@ -137,7 +140,7 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
       <!-- To display the top title what the user is doing -->
       <div class="modal-header">
 
-        <h1 class="modal-title fs-5" id="exampleModalLabel">
+        <h1 class="modal-title fs-5" id="deleteModal">
           Delete your set :C
         </h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" 
@@ -163,7 +166,9 @@ aria-labelledby="exampleModalLabel" aria-hidden="true">
 
           <!-- Runs Flask method that creates a new set in the database -->
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Make Set</button>
+            <button type="submit" class="btn btn-primary">
+              Delete Set ;-;
+            </button>
           </div>
 
         </form>
