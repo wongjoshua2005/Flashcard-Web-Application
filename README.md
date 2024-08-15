@@ -1,19 +1,21 @@
 # Flashcard-Web-Application
 ## Description: 
 Charming Flashcards is a web application that uses Flask, Python, Bootstrap, SQLite3, HTML/CSS, and JavaScript. 
-The purpose of this program is to make users not be distracted by other websites and make a loud beep. 
+The purpose of this program is to make users not be distracted by other websites and make a loud beep.
+The loud beep encourages the user to return to the site and keep studying.
 In addition, the web application has a simple and user-friendly interface in dark mode
-to make your eyes more relaxed when studying.
+to make your eyes more relaxed when studying. This application is mostly aimed at people
+who are distracted and want to make as much progress in their academics as possible. This program
+CAN be run on a phone or tablet, but I did not implement PWA because I did not know it even existed
+when I was developing this project. ;-;
 
 ## Features:
 The application has the following features:
-1. Create an account to log into every time to study
-2. Create a set and manage sets
-3. Add flashcards to a specific set
-4. Update flashcard information when necessary
-5. Delete flashcards that are no longer in use
-6. Pomodoro timer to keep track of study route
-7. An alarm that forces the user to study and not be distracted
+1. Create an account to log into every time to study (I know. 10/10 feature. :/)
+2. Create a set and manage your collection of sets
+4. Create flashcards and modify them to your liking
+6. The Pomodoro timer to keep track of your study route
+7. An alarm comes with JavaScript detection for when the user exists outside of the page (when the Pomodoro timer runs)
 
 ## Reflection:
 A major problem I had throughout making the web application was to store the Flask application in a class to use OOP. I thought that not using OOP would have been 
@@ -22,7 +24,7 @@ the Flask framework does not like to be turned into a class, and sometimes makin
 web applications made with Flask would be better off with a procedural paradigm. 
 
 This project taught me **a lot** about the difference between classroom assignments and making my programs from scratch.
-My college never taught me any ways to learn to make projects on my own, and I learned how to do so from CS50x. A problem I had faced throughout
+My computer science courses never taught me to make projects on my own, and I learned how to do so from CS50x. A problem I had faced throughout
 college was going through tutorial hell. I think this is the first step in the right direction to just start making projects and be confident. :)
 
 ## Files:
@@ -34,3 +36,9 @@ college was going through tutorial hell. I think this is the first step in the r
 6. The **user_database.db** is an SQLite3 database that stores the user's information, sets, and all flashcards they add to their set.
 
 ## TODO
+
+Due to the nature of bad decisions by trying to wrap Flask into a class, the program is going to run through the good old command line. 
+To get started, make sure you have git downloaded into the terminal to clone this repository and try it out for yourself.
+After you have git installed, you want to install any IDE that can use the command line that is similar to Linux.
+The purpose of having an IDE installed is to run this command: **python3 app.py** to run a local server to access the site.
+Congrats! You have your flashcard application! Make sure you study hard and earn those As that you deserve. ;)
