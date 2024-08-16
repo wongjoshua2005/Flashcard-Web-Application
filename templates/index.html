@@ -2,6 +2,9 @@
 {% extends "layout.html" %}
 
 {% block body %}
+<!-- Displays the title in website tab to indicate where the user is at -->
+<h1 style="display: none;">{% block title %}Sets{% endblock %}</h1>
+
 <h1 class="text-center">Welcome, {{ name }}! &#128522;</h1>
 
 <!-- To run the modal model for creating a new set -->
