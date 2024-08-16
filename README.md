@@ -47,4 +47,17 @@ The purpose of having an IDE installed is to run this command: **python3 app.py*
 Congrats! You have your flashcard application! Make sure you study hard and earn those As that you deserve. ;)
 
 ## Pictures of The Program
-(![Screenshot of the sets page where the user can add new collections to their account.](https://github.com/user-attachments/assets/3bfc8975-47f6-453b-a7f7-066238aa208e))
+- The sets page where the user can add new collections to their account.
+![Screenshot of the sets page where the user can add new collections to their account.](https://github.com/user-attachments/assets/3bfc8975-47f6-453b-a7f7-066238aa208e)
+
+- The Pomodoro timer is built directly into the flashcard app to time yourself and ensure you stay focused during studying sessions.
+![Screenshot of the Pomodoro timer built directly into the flashcard app to time yourself and ensure you stay focused during studying sessions.](https://github.com/user-attachments/assets/4e6ef173-5869-45a9-a6b9-a0b5b3bf5888)
+
+- The homepage where you can modify your set's flashcards to your liking! :)
+![The homepage where you can modify your set's flashcards to your liking! :)](https://github.com/user-attachments/assets/d3f5cd8a-3975-403e-8e59-177f6ee0caa0)
+
+- The flashcard itself. You can go to the next flashcard by clicking on the far left and right of the flashcard.
+![The flashcard itself. You can go to the next flashcard by clicking on the far left and right of the flashcard.](https://github.com/user-attachments/assets/ec37bbe2-ad21-4c49-9fe4-adaff2f47e4a)
+
+- The indicator is given to the user if they're distracted and have the Pomodoro timer on. In addition, a loud beep plays during this moment.
+![The indicator is given to the user if they're distracted and have the Pomodoro timer on. In addition, a loud beep plays during this moment.](https://github.com/user-attachments/assets/64de0524-404e-4b9d-a9a5-cd7dec67ac33)
