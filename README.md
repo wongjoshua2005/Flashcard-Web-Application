@@ -11,11 +11,14 @@ when I was developing this project. ;-;
 
 ## Features:
 The application has the following features:
-1. Create an account to log into every time to study (I know. 10/10 feature. :/)
+1. Create an account to log into every time to study using Python's bcrypt hashing to prevent brute force (I know. 10/10 feature. :/)
 2. Create a set and manage your collection of sets
 4. Create flashcards and modify them to your liking
 6. The Pomodoro timer to keep track of your study route
 7. An alarm comes with JavaScript detection for when the user exists outside of the page (when the Pomodoro timer runs)
+
+The features are just the basics of what I can make during the remainder of my summer. If the project does become popular in the future,
+I will continue to add more features.
 
 ## Reflection:
 A major problem I had throughout making the web application was to store the Flask application in a class to use OOP. I thought that not using OOP would have been 
@@ -42,3 +45,6 @@ To get started, make sure you have git downloaded into the terminal to clone thi
 After you have git installed, you want to install any IDE that can use the command line that is similar to Linux.
 The purpose of having an IDE installed is to run this command: **python3 app.py** to run a local server to access the site.
 Congrats! You have your flashcard application! Make sure you study hard and earn those As that you deserve. ;)
+
+## Pictures of The Program
+![Screenshot of the sets page where the user can add new collections to their account.](https://mail.google.com/mail/u/0/popout?ver=dfzx5zawigdk#attid%253Datt_19158bb98c1665a2_0.5_f_lzw0hoai4)
