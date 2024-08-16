@@ -47,4 +47,4 @@ The purpose of having an IDE installed is to run this command: **python3 app.py*
 Congrats! You have your flashcard application! Make sure you study hard and earn those As that you deserve. ;)
 
 ## Pictures of The Program
-![Screenshot of the sets page where the user can add new collections to their account.](https://mail.google.com/mail/u/0/popout?ver=dfzx5zawigdk#attid%253Datt_19158bb98c1665a2_0.5_f_lzw0hoai4)
+![Screenshot of the sets page where the user can add new collections to their account.](![Screenshot 2024-08-15 9 05 51 PM](https://github.com/user-attachments/assets/3bfc8975-47f6-453b-a7f7-066238aa208e))
